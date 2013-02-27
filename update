@@ -1,0 +1,119 @@
+#!/bin/sh
+#
+# An hook script to mail out commit update information.
+# Called by git-receive-pack with arguments: refname sha1-old sha1-new
+#
+# To enable this hook:
+# (1) change the recipient e-mail address
+# (2) make this file executable by "chmod +x update".
+#
+
+project=$(cat $GIT_DIR/description)
+[ -f $GIT_DIR/commit-list ] && recipients=$(cat $GIT_DIR/commit-list)
+[ -n "$recipients" ] || exit 0
+
+ref_type=$(git cat-file -t "$3")
+
+# Only allow annotated tags in a shared repo
+# Remove this code to treat dumb tags the same as everything else
+# case "$1","$ref_type" in
+# refs/tags/*,commit)
+# 	echo "*** Un-annotated tags are not allowed in this repo" >&2
+# 	echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate."
+# 	exit 1;;
+# refs/tags/*,tag)
+# 	echo "### Pushing version '${1##refs/tags/}' to the masses" >&2
+# 	# recipients="release-announce@somwehere.com announce@somewhereelse.com"
+# 	;;
+# esac
+
+# set this  to 'cat' to get a very detailed listing.
+# short only kicks in when an annotated tag is added
+short='git shortlog'
+
+# see 'date --help' for info on how to write this
+# The default is a human-readable iso8601-like format with minute
+# precision ('2006-01-25 15:58 +0100' for example)
+date_format="%F %R %z"
+
+# Set to the number of pathname components you want in the subject line to
+# indicate which components of a project changed.
+num_path_components=2
+
+# Set subject
+(if expr "$2" : '0*$' >/dev/null ; then
+	subject="Changes to '${1##refs/heads/}'"
+	echo "Subject: $subject"
+else
+	base=$(git-merge-base "$2" "$3")
+	subject=$(git-diff-tree -r --name-only "$base" "$3" |
+	          cut -d/ -f-$num_path_components | sort -u | xargs echo -n)
+        commits=$(git-rev-list "$3" "^$base" | wc -l)
+	if [ "$commits" -ne 1 ] ; then
+		subject="$commits commits - $subject"
+	fi
+	branch="${1##refs/heads/}"
+	if [ "$branch" != "master" ] ; then
+		subject="Branch '$branch' - $subject"
+	fi
+	echo "Subject: $subject"
+fi
+
+echo "To: $recipients"
+echo "X-Project: $project"
+module=$(basename `readlink -f $GIT_DIR`)
+echo "X-Git-Module: $module"
+echo ""
+
+if expr "$2" : '0*$' >/dev/null
+then
+	# new ref
+	case "$1" in
+	refs/tags/*)
+		# a pushed and annotated tag (usually) means a new version
+		tag="${1##refs/tags/}"
+		if [ "$ref_type" = tag ]; then
+			tagger=$(git cat-file tag $3 | \
+				sed -n '4s/tagger \([^>]*>\)[^0-9]*\([0-9]*\).*/\1/p')
+			ts=$(git cat-file tag $3 | \
+				sed -n '4s/tagger \([^>]*>\)[^0-9]*\([0-9]*\).*/\2/p')
+			date=$(date --date="1970-01-01 00:00:00 $ts seconds" +"$date_format")
+			echo "Tag '$tag' created by $tagger at $date"
+			git cat-file tag $3 | sed -n '5,$p'
+			echo
+		fi
+		prev=$(git describe "$3^" | sed 's/-g.*//')
+		# the first tag in a repo will yield no $prev
+		if [ -z "$prev" ]; then
+			echo "Changes since the dawn of time:"
+			git rev-list --pretty $3 | $short
+		else
+			echo "Changes since $prev:"
+			git rev-list --pretty $prev..$3 | $short
+			echo ---
+			git diff $prev..$3 | diffstat -p1
+			echo ---
+		fi
+		;;
+
+	refs/heads/*)
+		branch="${1##refs/heads/}"
+		echo "New branch '$branch' available with the following commits:"
+		git-rev-list --pretty "$3" $(git-rev-parse --not --all)
+		;;
+	esac
+else
+	case "$base" in
+	"$2")
+		git diff "$3" "^$base" | diffstat -p1
+		echo
+		echo "New commits:"
+		;;
+	*)
+		echo "Rebased ref, commits from common ancestor:"
+		;;
+	esac
+	git-rev-list "$3" "^$base" | while read rev; do git-show $rev; echo ""; echo "";  done
+fi) | /usr/local/bin/send-unicode-email.py $recipients
+exit 0
+

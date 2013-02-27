@@ -1,0 +1,11 @@
+#!/bin/bash
+
+while read old_sha1 new_sha1 refname anothervalue ; do
+    list=$(git show --pretty="format:" --name-only $new_sha1 | grep -e ".pp$")
+    for tmpfile in ${list}; do
+        git show ${new_sha1}:${tmpfile} | sed 's/\$puppet_server//' | puppet --color=false --confdir=/tmp --vardir=/tmp --parseonly --ignoreimport
+        if [ "$?" -ne "0" ]; then exit 1; fi
+    done
+done
+
+exit $?

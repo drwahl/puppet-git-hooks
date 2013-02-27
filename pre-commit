@@ -1,0 +1,55 @@
+#!/bin/sh
+
+git_root=`git rev-parse --show-toplevel`
+
+syntax_errors=0
+error_msg=$(mktemp /tmp/error_msg.XXXXXX)
+
+if git rev-parse --quiet --verify HEAD > /dev/null
+then
+    against=HEAD
+else
+    # Initial commit: diff against an empty tree object
+    against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# Get list of new/modified manifest and template files to check (in git index)
+for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.pp$\|\.*.erb$'`
+do
+    # Don't check empty files
+    case $puppetmodule in
+        *.pp )
+            # Check puppet manifest syntax
+            puppet parser validate --color=false $git_root/$puppetmodule > $error_msg ;;
+        *.erb )
+            # Check ERB template syntax
+            #erb -x $git_root/$puppetmodule | ruby -c 2> $error_msg > /dev/null ;;
+    esac
+    if [ $? -ne 0 ]
+    then
+        echo -n "$indexfile: "
+        cat $error_msg
+        syntax_errors=`expr $syntax_errors + 1`
+    fi
+done
+
+rm -f $error_msg
+
+if [ "$syntax_errors" -ne 0 ]
+then
+    echo "Error: $syntax_errors syntax errors found, aborting commit."
+    exit 1
+fi
+
+# De-lint puppet manifests
+if [ `which puppet-lint` ]; then
+    for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep \.*.pp$`; do
+        puppet-lint --fail-on-warnings --with-filename --no-80chars-check --no-double_quoted_strings-check $git_root/$puppetmodule
+        RC=$?
+        if [ $RC -ne 0 ]; then
+            exit $RC
+        fi
+    done
+fi
+
+exit 0
