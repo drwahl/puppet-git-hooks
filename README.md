@@ -1,4 +1,4 @@
 puppet-git-hooks
 ================
 
-Git client and server side hooks for puppet development
+Git hooks to assist puppet module development.  Client side hooks allow for various checks before commits are staged.  Server side hooks are provided for infrastructural reinformence of variance standardaizations compliance.
