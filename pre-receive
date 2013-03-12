@@ -1,11 +1,42 @@
 #!/bin/bash
 
-while read old_sha1 new_sha1 refname anothervalue ; do
-    list=$(git show --pretty="format:" --name-only $new_sha1 | grep -e ".pp$")
-    for tmpfile in ${list}; do
-        git show ${new_sha1}:${tmpfile} | sed 's/\$puppet_server//' | puppet --color=false --confdir=/tmp --vardir=/tmp --parseonly --ignoreimport
-        if [ "$?" -ne "0" ]; then exit 1; fi
-    done
-done
+warned=0
 
-exit $?
+while read oldrev newrev refname; do
+    for puppetmodule in `git diff-tree --no-commit-id --name-only -r $newrev`; do
+        if [[ $puppetmodule = *.pp ]]; then
+            echo -e "\e[0;36m" "Checking $puppetmodule for syntax errors and styleguide compliance..." "\e[0m"
+            tmpdir=`mktemp -d`
+            tmpmodule="$tmpdir/$puppetmodule"
+            tmperror="$tmpdir/errors.txt"
+            mkdir -p $tmpmodule
+            rmdir $tmpmodule
+            git show $newrev:$puppetmodule > $tmpmodule
+            puppet parser validate $tmpmodule 2&> $tmperror
+            rc=$?
+            if [[ $rc != 0 ]]; then
+                echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push deniend. Run tests locally and confirm they pass before pushing. \e[0m"
+                cat $tmperror
+                rm -rf $tmpdir
+                exit $rc
+            fi
+            # Check styleguide, but do not error if styleguide does not pass
+            puppet-lint --no-80chars-check $tmpmodule > $tmperror
+            rc=$?
+            if [[ $rc != 0 ]]; then
+                if [[ $warned = 0 ]]; then
+                    echo -e "\e[0;31m" "Please follow the puppet module styleguide (http://docs.puppetlabs.com/guides/style_guide.html)." "\e[0m"
+                    echo -e "\e[0;31m" "The following ERROR/WARNING messages are informational only. The commit has been accepted. In the future, these will cause your commit to be refused." "\e[0m"
+                    warned=1
+                fi
+                echo -e "\e[0;33m" "Style guide compliance errors in $puppetmodule:" "\e[0m"
+                echo -e "\e[0;33m"
+                cat $tmperror
+                echo -e "\e[0m"
+            fi
+            rm -rf $tmpdir
+        fi
+    done
+done 
+# Everything went OK so we can exit with a zero
+exit 0
