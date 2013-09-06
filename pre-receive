@@ -16,7 +16,7 @@ while read oldrev newrev refname; do
                 puppet parser validate $tmpmodule 2&> $tmperror
                 rc=$?
                 if [[ $rc != 0 ]]; then
-                    echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push deniend. Run tests locally and confirm they pass before pushing. \e[0m"
+                    echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push denied. Run tests locally and confirm they pass before pushing. \e[0m"
                     cat $tmperror
                     rm -rf $tmpdir
                     final_ret=1
