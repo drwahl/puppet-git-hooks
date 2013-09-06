@@ -9,7 +9,7 @@ while read oldrev newrev refname; do
           continue
         fi
 
-        echo -e "\e[0;36m" "Checking $puppetmodule for syntax errors and styleguide compliance..." "\e[0m"
+        echo -e "\e[0;36m" "Checking $puppetmodule for science!" "\e[0m"
         tmpdir=`mktemp -d`
         tmpmodule="$tmpdir/$puppetmodule"
         tmperror="$tmpdir/errors.txt"
