@@ -4,6 +4,11 @@ final_ret=0
 
 while read oldrev newrev refname; do
     for puppetmodule in `git diff-tree --no-commit-id --name-only -r $newrev`; do
+        if [[ "$puppetmodule" =~ ^modules/ ]]; then
+          echo "skipping all checks for submodule $puppetmodule"
+          continue
+        fi
+
         echo -e "\e[0;36m" "Checking $puppetmodule for syntax errors and styleguide compliance..." "\e[0m"
         tmpdir=`mktemp -d`
         tmpmodule="$tmpdir/$puppetmodule"
