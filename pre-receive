@@ -1,28 +1,34 @@
 #!/bin/bash
-
 warned=0
+final_ret=0
 
 while read oldrev newrev refname; do
     for puppetmodule in `git diff-tree --no-commit-id --name-only -r $newrev`; do
-        echo -e "\e[0;36m" "Checking $puppetmodule for syntax errors and styleguide compliance..." "\e[0m"
+        if [[ "$puppetmodule" =~ ^modules/ ]]; then
+          echo "skipping all checks for submodule $puppetmodule"
+          continue
+        fi
+
+        echo -e "\e[0;36m" "Checking $puppetmodule for science!" "\e[0m"
         tmpdir=`mktemp -d`
         tmpmodule="$tmpdir/$puppetmodule"
         tmperror="$tmpdir/errors.txt"
         mkdir -p $tmpmodule
         rmdir $tmpmodule
+
         git show $newrev:$puppetmodule > $tmpmodule
         case $puppetmodule in
             *.pp ) 
-                puppet parser validate $tmpmodule 2&> $tmperror
+                /var/lib/gems/1.8/bin/puppet parser validate --ignoreimport --storeconfigs true $tmpmodule 2&> $tmperror
                 rc=$?
                 if [[ $rc != 0 ]]; then
-                    echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push deniend. Run tests locally and confirm they pass before pushing. \e[0m"
+                    echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push denied. Run tests locally and confirm they pass before pushing. \e[0m"
                     cat $tmperror
                     rm -rf $tmpdir
-                    exit $rc
+                    final_ret=1
                 fi
                 # Check styleguide, but do not error if styleguide does not pass
-                /usr/bin/puppet-lint --fail-on-warnings --no-80chars-check $tmpmodule > $tmperror
+                /var/lib/gems/1.8/bin/puppet-lint --fail-on-warnings --no-80chars-check $tmpmodule > $tmperror
                 rc=$?
                 if [[ $rc != 0 ]]; then
                     if [[ $warned = 0 ]]; then
@@ -45,11 +51,12 @@ while read oldrev newrev refname; do
                     cat $tmperror
                     echo -e "\e[0m"
                     echo -e "\e[0;33m" "Commit accepted, but the above template will not expand properly" "\e[0m"
+                    final_ret=1
                 fi
                 ;;
         esac
         rm -rf $tmpdir
     done
 done
-# Everything went OK so we can exit with a zero
-exit 0
+
+exit $final_ret
