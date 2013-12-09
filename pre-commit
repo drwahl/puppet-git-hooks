@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 git_root=`git rev-parse --show-toplevel`
 
@@ -20,10 +20,12 @@ do
     case $puppetmodule in
         *.pp )
             # Check puppet manifest syntax
-            puppet parser validate --color=false $git_root/$puppetmodule > $error_msg ;;
+            echo -e "Validate Puppet module: \033[0;32mmanifests/init.pp\033[0m"
+            puppet parser validate --color=true $git_root/$puppetmodule > $error_msg ;;
         *.erb )
             # Check ERB template syntax
-            #erb -x $git_root/$puppetmodule | ruby -c 2> $error_msg > /dev/null ;;
+            echo -e "Validate Puppet template: \033[0;32mmanifests/init.pp\033[0m"
+            erb -x $git_root/$puppetmodule | ruby -c 2> $error_msg > /dev/null ;;
     esac
     if [ $? -ne 0 ]
     then
@@ -37,13 +39,14 @@ rm -f $error_msg
 
 if [ "$syntax_errors" -ne 0 ]
 then
-    echo "Error: $syntax_errors syntax errors found, aborting commit."
+    echo -e "\033[0;31mError: $syntax_errors syntax errors found, aborting commit.\033[0m"
     exit 1
 fi
 
 # De-lint puppet manifests
 if [ `which puppet-lint` ]; then
     for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep \.*.pp$`; do
+        echo -e "Style check for Puppet module: \033[0;32mmanifests/init.pp\033[0m"
         puppet-lint --fail-on-warnings --with-filename --no-80chars-check --no-double_quoted_strings-check $git_root/$puppetmodule
         RC=$?
         if [ $RC -ne 0 ]; then
