@@ -20,12 +20,12 @@ do
     case $puppetmodule in
         *.pp )
             # Check puppet manifest syntax
-            echo -e "Validate Puppet module: \033[0;32mmanifests/init.pp\033[0m"
+            echo -e "Validate Puppet module: \033[0;32m$puppetmodule\033[0m"
             puppet parser validate --color=true $git_root/$puppetmodule > $error_msg ;;
         *.erb )
             # Check ERB template syntax
-            echo -e "Validate Puppet template: \033[0;32mmanifests/init.pp\033[0m"
-            erb -x $git_root/$puppetmodule | ruby -c 2> $error_msg > /dev/null ;;
+            echo -e "Validate Puppet template: \033[0;32m$puppetmodule\033[0m"
+            erb -P -x -T '-' $git_root/$puppetmodule | ruby -c 2> $error_msg > /dev/null ;;
     esac
     if [ $? -ne 0 ]
     then
@@ -46,7 +46,7 @@ fi
 # De-lint puppet manifests
 if [ `which puppet-lint` ]; then
     for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep \.*.pp$`; do
-        echo -e "Style check for Puppet module: \033[0;32mmanifests/init.pp\033[0m"
+        echo -e "Style check for Puppet module: \033[0;32m$puppetmodule\033[0m"
         puppet-lint --fail-on-warnings --with-filename --no-80chars-check --no-double_quoted_strings-check $git_root/$puppetmodule
         RC=$?
         if [ $RC -ne 0 ]; then
