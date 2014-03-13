@@ -1,71 +1,27 @@
-#! /bin/bash
+#!/bin/sh
 
 git_root=`git rev-parse --show-toplevel`
+failures=0
+RC=0
 
-syntax_errors=0
+${git_root}/.git/hooks/commit_hooks/puppet_erb_syntax_checks.sh
+RC=$?
+if [ "$RC" -ne 0 ]; then
+    failures=`expr $failures + 1`
+fi
+${git_root}/.git/hooks/commit_hooks/puppet_lint_checks.sh
+RC=$?
+if [ "$RC" -ne 0 ]; then
+    failures=`expr $failures + 1`
+fi
+${git_root}/.git/hooks/commit_hooks/rspec_puppet_checks.sh
+RC=$?
+if [ "$RC" -ne 0 ]; then
+    failures=`expr $failures + 1`
+fi
 
-# Get list of new/modified manifest and template files to check (in git index)
-for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.pp$\|\.*.erb$'`
-do
-    # Don't check empty files
-    case $puppetmodule in
-        *.pp )
-            # Check puppet manifest syntax
-            echo -e "Validate Puppet module: \033[0;32m$puppetmodule\033[0m"
-            puppet parser validate --color=true "$git_root/$puppetmodule" > $error_msg ;;
-        *.erb )
-            # Check ERB template syntax
-            echo -e "Validate Puppet template: \033[0;32m$puppetmodule\033[0m"
-            erb -P -x -T '-' "$git_root/$puppetmodule" | ruby -c 2> $error_msg > /dev/null ;;
-    esac
-    if [ $? -ne 0 ]
-    then
-        echo -n "$indexfile: "
-        cat $error_msg
-        syntax_errors=`expr $syntax_errors + 1`
-    fi
-done
-
-if [ "$syntax_errors" -ne 0 ]
-then
-    echo -e "\033[0;31mError: $syntax_errors syntax errors found, aborting commit.\033[0m"
+if [ "$failures" -ne 0 ]; then
     exit 1
 fi
-
-# De-lint puppet manifests
-if [ `which puppet-lint` ]; then
-    for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep \.*.pp$`; do
-        echo -e "Style check for Puppet module: \033[0;32m$puppetmodule\033[0m"
-        puppet-lint --fail-on-warnings --with-filename --no-80chars-check --no-double_quoted_strings-check "$git_root/$puppetmodule"
-        RC=$?
-        if [ $RC -ne 0 ]; then
-            exit $RC
-        fi
-    done
-fi
-
-# Run rspec-puppet tests
-if [ `which rspec` ]; then
-    for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.pp$\|\.*.rb$'`; do
-        module_dir=$(dirname $puppetmodule | cut -d"/" -f1,2)
-        cd $module_dir
-        rspec > /dev/null
-        RC=$?
-        cd - > /dev/null
-        if [ $RC -ne 0 ]; then
-            cd $module_dir
-            rspec --color --format d
-            echo "rspec-puppet test failed for $module_dir (see above)"
-            cd - > /dev/null
-            syntax_errors=`expr $syntax_errors + 1`
-        fi
-    done
-fi
-
-if [ "$syntax_errors" -ne 0 ]; then
-    echo "Error: $syntax_errors rspec-puppet tests failed, aborting commit."
-    exit 1
-fi
-
 
 exit 0
