@@ -3,7 +3,6 @@
 git_root=`git rev-parse --show-toplevel`
 
 syntax_errors=0
-error_msg=$(mktemp /tmp/error_msg.XXXXXX)
 
 if git rev-parse --quiet --verify HEAD > /dev/null
 then
@@ -34,8 +33,6 @@ do
         syntax_errors=`expr $syntax_errors + 1`
     fi
 done
-
-rm -f $error_msg
 
 if [ "$syntax_errors" -ne 0 ]
 then
