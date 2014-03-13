@@ -19,7 +19,7 @@ while read oldrev newrev refname; do
         git show $newrev:$puppetmodule > $tmpmodule
         case $puppetmodule in
             *.pp ) 
-                /var/lib/gems/1.8/bin/puppet parser validate --ignoreimport --storeconfigs true $tmpmodule 2&> $tmperror
+                puppet parser validate --ignoreimport --storeconfigs true $tmpmodule 2&> $tmperror
                 rc=$?
                 if [[ $rc != 0 ]]; then
                     echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push denied. Run tests locally and confirm they pass before pushing. \e[0m"
@@ -28,7 +28,7 @@ while read oldrev newrev refname; do
                     final_ret=1
                 fi
                 # Check styleguide, but do not error if styleguide does not pass
-                /var/lib/gems/1.8/bin/puppet-lint --fail-on-warnings --no-80chars-check $tmpmodule > $tmperror
+                puppet-lint --fail-on-warnings --no-80chars-check $tmpmodule > $tmperror
                 rc=$?
                 if [[ $rc != 0 ]]; then
                     if [[ $warned = 0 ]]; then
