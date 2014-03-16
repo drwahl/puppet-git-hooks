@@ -6,7 +6,7 @@ syntax_errors=0
 for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.pp$'`
 do
     # Check puppet manifest syntax
-    puppet parser validate --color=false $git_root/$puppetmodule ;;
+    puppet parser validate --color=false $git_root/$puppetmodule
     if [ $? -ne 0 ]; then
         echo -n "$indexfile: "
         syntax_errors=`expr $syntax_errors + 1`

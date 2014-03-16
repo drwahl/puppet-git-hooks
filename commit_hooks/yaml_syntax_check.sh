@@ -6,7 +6,7 @@ syntax_errors=0
 for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.yaml$\|\.*.yml$'`
 do
     # Check YAML file syntax
-    ruby -e "require 'yaml'; YAML.parse(File.open('$puppetmodule'))" 2> $error_msg > /dev/null ;;
+    ruby -e "require 'yaml'; YAML.parse(File.open('$puppetmodule'))" 2> $error_msg > /dev/null
     if [ $? -ne 0 ]; then
         echo -n "$indexfile: "
         syntax_errors=`expr $syntax_errors + 1`

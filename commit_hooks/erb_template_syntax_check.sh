@@ -6,7 +6,7 @@ syntax_errors=0
 for puppetmodule in `git diff --cached --name-only --diff-filter=ACM | grep '\.*.erb$'`
 do
     # Check ERB template syntax
-    cat $git_root/$puppetmodule | erb -x -T - | ruby -c > /dev/null ;;
+    cat $git_root/$puppetmodule | erb -x -T - | ruby -c > /dev/null
     if [ $? -ne 0 ]; then
         echo -n "$indexfile: "
         syntax_errors=`expr $syntax_errors + 1`
