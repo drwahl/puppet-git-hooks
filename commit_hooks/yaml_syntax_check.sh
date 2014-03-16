@@ -11,14 +11,14 @@ do
     if [ $? -ne 0 ]; then
         cat $error_msg
         syntax_errors=`expr $syntax_errors + 1`
-        echo "ERROR in $puppetmodule (see above)"
+        echo "ERROR: yaml syntax error in $puppetmodule (see above)"
     fi
 done
 
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo "Error: $syntax_errors syntax errors found in hiera yaml. Commit will be aborted."
+    echo "Error: $syntax_errors syntax error(s) found in hiera yaml. Commit will be aborted."
     exit 1
 fi
 

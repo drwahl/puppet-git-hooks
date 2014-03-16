@@ -9,12 +9,12 @@ do
     puppet parser validate --color=false $git_root/$puppetmodule
     if [ $? -ne 0 ]; then
         syntax_errors=`expr $syntax_errors + 1`
-        echo "ERROR in $puppetmodule (see above)"
+        echo "ERROR: puppet syntax error in $puppetmodule (see above)"
     fi
 done
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo "Error: $syntax_errors syntax errors found in puppet manifests. Commit will be aborted."
+    echo "Error: $syntax_errors syntax error(s) found in puppet manifests. Commit will be aborted."
     exit 1
 fi
 

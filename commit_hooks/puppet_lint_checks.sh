@@ -10,13 +10,13 @@ if [ `which puppet-lint` ]; then
         RC=$?
         if [ $RC -ne 0 ]; then
             syntax_errors=$(expr $syntax_errors + 1)
-            echo "Error in $puppetmodule (see above)"
+            echo "Error: styleguide violation in $puppetmodule (see above)"
         fi
     done
 fi
 
 if [ $syntax_errors -ne 0 ]; then
-    echo "Error: $syntax_errors styleguide violations found.  Commit will be aborted."
+    echo "Error: $syntax_errors styleguide violation(s) found.  Commit will be aborted."
     exit 1
 fi
 

@@ -11,7 +11,7 @@ do
     if [ $? -ne 0 ]; then
         cat $error_msg
         syntax_errors=`expr $syntax_errors + 1`
-        echo "ERROR in $puppetmodule (see above)"
+        echo "ERROR: erb syntax error in $puppetmodule (see above)"
     fi
 done
 
