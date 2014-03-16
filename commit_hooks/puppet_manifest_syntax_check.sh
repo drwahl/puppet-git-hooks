@@ -8,7 +8,6 @@ do
     # Check puppet manifest syntax
     puppet parser validate --color=false $git_root/$puppetmodule
     if [ $? -ne 0 ]; then
-        echo -n "$indexfile: "
         syntax_errors=`expr $syntax_errors + 1`
         echo "ERROR in $puppetmodule (see above)"
     fi
