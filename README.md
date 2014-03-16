@@ -10,6 +10,7 @@ Current supported pre-commit (client side) checks
 * Erb template syntax
 * Puppet-lint
 * Rspec-puppet
+* Yaml (hiera data) syntax
 
 Current supported pre-recieve (server side) checks
 ==================================================
