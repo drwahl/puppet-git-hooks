@@ -4,22 +4,42 @@ git_root=`git rev-parse --show-toplevel`
 failures=0
 RC=0
 
-${git_root}/.git/hooks/commit_hooks/puppet_erb_syntax_checks.sh
+#check puppet manifest syntax
+${git_root}/.git/hooks/commit_hooks/puppet_manifest_syntax_check.sh
 RC=$?
 if [ "$RC" -ne 0 ]; then
     failures=`expr $failures + 1`
 fi
+
+#check erb (template file) syntax
+${git_root}/.git/hooks/commit_hooks/erb_template_syntax_check.sh
+RC=$?
+if [ "$RC" -ne 0 ]; then
+    failures=`expr $failures + 1`
+fi
+
+#check hiera data (yaml/yml) syntax
+${git_root}/.git/hooks/commit_hooks/yaml_syntax_check.sh
+RC=$?
+if [ "$RC" -ne 0 ]; then
+    failures=`expr $failures + 1`
+fi
+
+#puppet manifest styleguide compliance
 ${git_root}/.git/hooks/commit_hooks/puppet_lint_checks.sh
 RC=$?
 if [ "$RC" -ne 0 ]; then
     failures=`expr $failures + 1`
 fi
+
+#rspec test validation
 ${git_root}/.git/hooks/commit_hooks/rspec_puppet_checks.sh
 RC=$?
 if [ "$RC" -ne 0 ]; then
     failures=`expr $failures + 1`
 fi
 
+#summary
 if [ "$failures" -ne 0 ]; then
     exit 1
 fi
