@@ -1,62 +1,88 @@
-#!/bin/bash
-warned=0
-final_ret=0
+#!/bin/sh
+
+failures=0
+RC=0
+
+subhook_root=hooks/commit_hooks
+tmpdir=`mktemp -d`
 
 while read oldrev newrev refname; do
-    for puppetmodule in `git diff-tree --no-commit-id --name-only -r $newrev`; do
-        if [[ "$puppetmodule" =~ ^modules/ ]]; then
-          echo "skipping all checks for submodule $puppetmodule"
-          continue
-        fi
-
-        echo -e "\e[0;36m" "Checking $puppetmodule for science!" "\e[0m"
-        tmpdir=`mktemp -d`
-        tmpmodule="$tmpdir/$puppetmodule"
+    for changedfile in `git diff-tree --no-commit-id --name-only -r $newrev --diff-filter=ACM`; do
+        tmpmodule="$tmpdir/$changedfile"
         tmperror="$tmpdir/errors.txt"
         mkdir -p $tmpmodule
         rmdir $tmpmodule
+        git show $newrev:$changedfile > $tmpmodule
 
-        git show $newrev:$puppetmodule > $tmpmodule
-        case $puppetmodule in
-            *.pp ) 
-                puppet parser validate --ignoreimport --storeconfigs true $tmpmodule 2&> $tmperror
-                rc=$?
-                if [[ $rc != 0 ]]; then
-                    echo -e "\e[0;31m'puppet parser validate' failed on $puppetmodule - push denied. Run tests locally and confirm they pass before pushing. \e[0m"
-                    cat $tmperror
-                    rm -rf $tmpdir
-                    final_ret=1
+        #check puppet manifest syntax
+        if type puppet >/dev/null 2>&1; then
+            if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
+                ${subhook_root}/puppet_manifest_syntax_check.sh $tmpmodule
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                    failures=`expr $failures + 1`
                 fi
-                # Check styleguide, but do not error if styleguide does not pass
-                puppet-lint --fail-on-warnings --no-80chars-check $tmpmodule > $tmperror
-                rc=$?
-                if [[ $rc != 0 ]]; then
-                    if [[ $warned = 0 ]]; then
-                        echo -e "\e[0;31m" "Please follow the puppet module styleguide (http://docs.puppetlabs.com/guides/style_guide.html)." "\e[0m"
-                        echo -e "\e[0;31m" "The following ERROR/WARNING messages are informational only. The commit has been accepted. In the future, these will cause your commit to be refused." "\e[0m"
-                        warned=1
+            fi
+        else
+            echo "puppet not installed. Skipping puppet syntax checks..."
+        fi
+
+        if type ruby >/dev/null 2>&1; then
+            #check erb (template file) syntax
+            if type erb >/dev/null 2>&1; then
+                if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
+                    ${subhook_root}/erb_template_syntax_check.sh $tmpmodule
+                    RC=$?
+                    if [ "$RC" -ne 0 ]; then
+                        failures=`expr $failures + 1`
                     fi
-                    echo -e "\e[0;33m" "Style guide compliance errors in $puppetmodule:" "\e[0m"
-                    echo -e "\e[0;33m"
-                    cat $tmperror
-                    echo -e "\e[0m"
                 fi
-                ;;
-            *.erb )
-                cat $tmpmodule | erb -x -T - | ruby -c > /dev/null 2> $tmperror
-                rc=$?
-                if [[ $rc != 0 ]]; then
-                    echo -e "\e[0;31m" "Ruby syntax checker failed on template $puppetmodule:" "\e[0m"
-                    echo -e "\e[0;33m"
-                    cat $tmperror
-                    echo -e "\e[0m"
-                    echo -e "\e[0;33m" "Commit accepted, but the above template will not expand properly" "\e[0m"
-                    final_ret=1
+            else
+                echo "erb not installed. Skipping erb template checks..."
+            fi
+
+            #check hiera data (yaml/yml) syntax
+            if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
+                ${subhook_root}/yaml_syntax_check.sh $tmpmodule
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                    failures=`expr $failures + 1`
                 fi
-                ;;
-        esac
-        rm -rf $tmpdir
+            fi
+        else
+            echo "ruby not installed. Skipping erb/yaml checks..."
+        fi
+
+        #puppet manifest styleguide compliance
+        if type puppet-lint >/dev/null 2>&1; then
+            if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
+                ${subhook_root}/puppet_lint_checks.sh $tmpmodule
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                    failures=`expr $failures + 1`
+                fi
+            fi
+        else
+            echo "puppet-lint not installed. Skipping puppet-lint tests..."
+        fi
     done
 done
 
-exit $final_ret
+#rspec test validation
+if which rspec >/dev/null 2>&1; then
+    ${subhook_root}/rspec_puppet_checks.sh
+    RC=$?
+    if [ "$RC" -ne 0 ]; then
+        failures=`expr $failures + 1`
+    fi
+else
+    echo "rspec not installed. Skipping rspec-puppet tests..."
+fi
+
+#summary
+if [ "$failures" -ne 0 ]; then
+    echo "Error: $failures subhooks failed. Aborting commit."
+    exit 1
+fi
+
+exit 0

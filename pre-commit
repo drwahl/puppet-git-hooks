@@ -4,39 +4,71 @@ git_root=`git rev-parse --show-toplevel`
 failures=0
 RC=0
 
-#check puppet manifest syntax
-${git_root}/.git/hooks/commit_hooks/puppet_manifest_syntax_check.sh
-RC=$?
-if [ "$RC" -ne 0 ]; then
-    failures=`expr $failures + 1`
-fi
+subhook_root=$git_root/.git/hooks/commit_hooks
 
-#check erb (template file) syntax
-${git_root}/.git/hooks/commit_hooks/erb_template_syntax_check.sh
-RC=$?
-if [ "$RC" -ne 0 ]; then
-    failures=`expr $failures + 1`
-fi
+for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
+    #check puppet manifest syntax
+    if type puppet >/dev/null 2>&1; then
+        if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
+            ${subhook_root}/puppet_manifest_syntax_check.sh $changedfile
+            RC=$?
+            if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+            fi
+        fi
+    else
+        echo "puppet not installed. Skipping puppet syntax checks..."
+    fi
 
-#check hiera data (yaml/yml) syntax
-${git_root}/.git/hooks/commit_hooks/yaml_syntax_check.sh
-RC=$?
-if [ "$RC" -ne 0 ]; then
-    failures=`expr $failures + 1`
-fi
+    if type ruby >/dev/null 2>&1; then
+        #check erb (template file) syntax
+        if type erb >/dev/null 2>&1; then
+            if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
+                ${subhook_root}/erb_template_syntax_check.sh $changedfile
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                    failures=`expr $failures + 1`
+                fi
+            fi
+        else
+            echo "erb not installed. Skipping erb template checks..."
+        fi
 
-#puppet manifest styleguide compliance
-${git_root}/.git/hooks/commit_hooks/puppet_lint_checks.sh
-RC=$?
-if [ "$RC" -ne 0 ]; then
-    failures=`expr $failures + 1`
-fi
+        #check hiera data (yaml/yml) syntax
+        if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
+            ${subhook_root}/yaml_syntax_check.sh $changedfile
+            RC=$?
+            if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+            fi
+        fi
+    else
+        echo "ruby not installed. Skipping erb/yaml checks..."
+    fi
+
+    #puppet manifest styleguide compliance
+    if type puppet-lint >/dev/null 2>&1; then
+        if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
+            ${subhook_root}/puppet_lint_checks.sh $changedfile
+            RC=$?
+            if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+            fi
+        fi
+    else
+        echo "puppet-lint not installed. Skipping puppet-lint tests..."
+    fi
+done
 
 #rspec test validation
-${git_root}/.git/hooks/commit_hooks/rspec_puppet_checks.sh
-RC=$?
-if [ "$RC" -ne 0 ]; then
-    failures=`expr $failures + 1`
+if which rspec >/dev/null 2>&1; then
+    ${subhook_root}/rspec_puppet_checks.sh
+    RC=$?
+    if [ "$RC" -ne 0 ]; then
+        failures=`expr $failures + 1`
+    fi
+else
+    echo "rspec not installed. Skipping rspec-puppet tests..."
 fi
 
 #summary
