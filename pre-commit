@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 git_root=`git rev-parse --show-toplevel`
 failures=0
@@ -73,7 +73,7 @@ fi
 
 #summary
 if [ "$failures" -ne 0 ]; then
-    echo "Error: $failures subhooks failed. Aborting commit."
+    echo -e "\e[0;31mError: $failures subhooks failed. Aborting commit.\e[0m"
     exit 1
 fi
 

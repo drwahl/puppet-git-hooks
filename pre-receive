@@ -1,19 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 
 failures=0
 RC=0
 
 subhook_root=hooks/commit_hooks
-tmpdir=`mktemp -d`
+tmptree=$(mktemp -d)
 
 while read oldrev newrev refname; do
-    for changedfile in `git diff-tree --no-commit-id --name-only -r $newrev --diff-filter=ACM`; do
-        tmpmodule="$tmpdir/$changedfile"
-        tmperror="$tmpdir/errors.txt"
-        mkdir -p $tmpmodule
-        rmdir $tmpmodule
-        git show $newrev:$changedfile > $tmpmodule
-
+    git archive $newrev | tar x -C ${tmptree}
+    for changedfile in $(git diff --name-only $oldrev $newrev --diff-filter=ACM); do
+        tmpmodule="$tmptree/$changedfile"
         #check puppet manifest syntax
         if type puppet >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
@@ -67,21 +63,11 @@ while read oldrev newrev refname; do
         fi
     done
 done
-
-#rspec test validation
-if which rspec >/dev/null 2>&1; then
-    ${subhook_root}/rspec_puppet_checks.sh
-    RC=$?
-    if [ "$RC" -ne 0 ]; then
-        failures=`expr $failures + 1`
-    fi
-else
-    echo "rspec not installed. Skipping rspec-puppet tests..."
-fi
+rm -rf ${tmptree}
 
 #summary
 if [ "$failures" -ne 0 ]; then
-    echo "Error: $failures subhooks failed. Aborting commit."
+    echo -e "\e[0;31mError: $failures subhooks failed. Declining push.\e[0m"
     exit 1
 fi
 
