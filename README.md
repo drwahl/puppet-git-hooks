@@ -12,7 +12,7 @@ Current supported pre-commit (client side) checks
 * Rspec-puppet
 * Yaml (hiera data) syntax
 
-Current supported pre-recieve (server side) checks
+Current supported pre-receive (server side) checks
 ==================================================
 
 * Puppet manifest syntax
