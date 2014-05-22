@@ -14,6 +14,20 @@ if [ ! -z "$hook_symlink" ]; then
   subhook_root="$(dirname $hook_symlink)/commit_hooks"
 fi
 
+# If using submodules, we need to read proper subhook root
+if [ -f "$git_root/.git" ]; then
+    IFS=": "
+    while read -r name value
+    do
+        if [ $name == "gitdir" ]; then
+            submodule_hookdir=$value
+        fi
+    done < "$git_root/.git"
+    if [ ! -z "$submodule_hookdir" ]; then
+        subhook_root="$git_root/$submodule_hookdir/hooks/commit_hooks"
+    fi
+fi
+
 for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
