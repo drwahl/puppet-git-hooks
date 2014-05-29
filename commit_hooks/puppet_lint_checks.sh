@@ -6,15 +6,21 @@
 syntax_errors=0
 error_msg=$(mktemp /tmp/error_msg_puppet-lint.XXXXX)
 
+if [ $2 ]; then
+    module_path=$(echo $1 | sed -e 's|'$2'||')
+else
+    module_path=$1
+fi
+
 # De-lint puppet manifests
-echo -e "\e[0;36mChecking puppet style guide compliance for $1...\e[0m"
+echo -e "\e[0;36mChecking puppet style guide compliance for $module_path...\e[0m"
 puppet-lint --fail-on-warnings --with-filename --no-80chars-check $1 2>&1 > $error_msg
 RC=$?
 if [ $RC -ne 0 ]; then
     echo -en "\e[0;31m"
     syntax_errors=$(expr $syntax_errors + 1)
     cat $error_msg
-    echo -e "Error: styleguide violation in $1 (see above)\e[0m"
+    echo -e "Error: styleguide violation in $module_path (see above)\e[0m"
 fi
 rm -f $error_msg
 

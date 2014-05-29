@@ -4,6 +4,12 @@ git_root=`git rev-parse --show-toplevel`
 syntax_errors=0
 error_msg=$(mktemp /tmp/error_msg_rspec-puppet.XXXXX)
 
+if [ $2 ]; then
+    module_path=$(echo $1 | sed -e 's|'$2'||')
+else
+    module_path=$1
+fi
+
 # Run rspec-puppet tests
 oldpwd=$(pwd)
 tmpchangedmodules=''
@@ -22,7 +28,7 @@ changedmodules=$(echo -e "$tmpchangedmodules" | sort -u)
 for module_dir in $changedmodules; do
     #only run rspec if the "spec" directory exists
     if [ -d "${module_dir}/spec" ]; then
-	echo -e "\e[0;36mRunning rspec-puppet tests for module $1...\e[0m"
+	echo -e "\e[0;36mRunning rspec-puppet tests for module $module_path...\e[0m"
 	cd $module_dir
 	#this will run rspec for every test in the module
 	rspec > $error_msg

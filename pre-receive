@@ -13,7 +13,7 @@ while read oldrev newrev refname; do
         #check puppet manifest syntax
         if type puppet >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
-                ${subhook_root}/puppet_manifest_syntax_check.sh $tmpmodule
+                ${subhook_root}/puppet_manifest_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                     failures=`expr $failures + 1`
@@ -27,7 +27,7 @@ while read oldrev newrev refname; do
             #check erb (template file) syntax
             if type erb >/dev/null 2>&1; then
                 if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
-                    ${subhook_root}/erb_template_syntax_check.sh $tmpmodule
+                    ${subhook_root}/erb_template_syntax_check.sh $tmpmodule "${tmptree}/"
                     RC=$?
                     if [ "$RC" -ne 0 ]; then
                         failures=`expr $failures + 1`
@@ -39,7 +39,7 @@ while read oldrev newrev refname; do
 
             #check hiera data (yaml/yml) syntax
             if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
-                ${subhook_root}/yaml_syntax_check.sh $tmpmodule
+                ${subhook_root}/yaml_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                     failures=`expr $failures + 1`
@@ -52,7 +52,7 @@ while read oldrev newrev refname; do
         #puppet manifest styleguide compliance
         if type puppet-lint >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
-                ${subhook_root}/puppet_lint_checks.sh $tmpmodule
+                ${subhook_root}/puppet_lint_checks.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                     failures=`expr $failures + 1`
