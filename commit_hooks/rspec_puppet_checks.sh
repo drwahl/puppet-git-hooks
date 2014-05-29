@@ -20,18 +20,22 @@ changedmodules=$(echo -e "$tmpchangedmodules" | sort -u)
 
 #now that we have the list of modules that changed, run rspec for each module
 for module_dir in $changedmodules; do
-    echo -e "\e[0;36mRunning rspec-puppet tests for module $1...\e[0m"
-    cd $module_dir
-    #this will run rspec for every test in the module
-    rspec > $error_msg
-    RC=$?
-    if [ $RC -ne 0 ]; then
-        echo -en "\e[0;31m"
-        cat $error_msg
-        echo -e "Error: rspec-puppet test(s) failed for $module_dir (see above)\e[0m"
-        syntax_errors=`expr $syntax_errors + 1`
+    #only run rspec if the "spec" directory exists
+    if [ -d "${module_dir}/spec" ]; then
+	echo -e "\e[0;36mRunning rspec-puppet tests for module $1...\e[0m"
+	cd $module_dir
+	#this will run rspec for every test in the module
+	rspec > $error_msg
+	RC=$?
+	if [ $RC -ne 0 ]; then
+	    echo -en "\e[0;31m"
+	    cat $error_msg
+	    echo -e "Error: rspec-puppet test(s) failed for $module_dir (see above)\e[0m"
+	    syntax_errors=`expr $syntax_errors + 1`
+	fi
     fi
 done
+
 cd $oldpwd > /dev/null
 
 rm $error_msg
