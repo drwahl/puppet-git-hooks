@@ -56,8 +56,8 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
             echo "erb not installed. Skipping erb template checks..."
         fi
 
-        #check hiera data (yaml/yml) syntax
-        if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
+        #check hiera data (yaml/yml/eyaml/eyml) syntax
+        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then 
             ${subhook_root}/yaml_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -95,7 +95,7 @@ fi
 
 #summary
 if [ "$failures" -ne 0 ]; then
-    echo -e "\e[0;31mError: $failures subhooks failed. Aborting commit.\e[0m"
+    echo -e "\x1B[0;31mError: $failures subhooks failed. Aborting commit.\x1B[0m"
     exit 1
 fi
 

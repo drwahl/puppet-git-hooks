@@ -13,21 +13,21 @@ else
 fi
 
 # De-lint puppet manifests
-echo -e "\e[0;36mChecking puppet style guide compliance for $module_path...\e[0m"
+echo -e "\x1B[0;36mChecking puppet style guide compliance for $module_path...\x1B[0m"
 puppet-lint --fail-on-warnings --with-filename --no-80chars-check $1 2>&1 > $error_msg
 RC=$?
 if [ $RC -ne 0 ]; then
-    echo -en "\e[0;31m"
+    echo -en "\x1B[0;31m"
     syntax_errors=$(expr $syntax_errors + 1)
     cat $error_msg
-    echo -e "Error: styleguide violation in $module_path (see above)\e[0m"
+    echo -e "Error: styleguide violation in $module_path (see above)\x1B[0m"
 fi
 rm -f $error_msg
 
 if [ $syntax_errors -ne 0 ]; then
-    echo -e "\e[0;31mError: $syntax_errors styleguide violation(s) found. Commit will be aborted.
+    echo -e "\x1B[0;31mError: $syntax_errors styleguide violation(s) found. Commit will be aborted.
 Please follow the puppet style guide outlined at:
-http://docs.puppetlabs.com/guides/style_guide.html\e[0m"
+http://docs.puppetlabs.com/guides/style_guide.html\x1B[0m"
     exit 1
 fi
 

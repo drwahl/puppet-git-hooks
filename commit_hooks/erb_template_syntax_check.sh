@@ -15,18 +15,18 @@ else
 fi
 
 # Check ERB template syntax
-echo -e "\e[0;36mChecking erb template syntax for $module_path...\e[0m"
+echo -e "\x1B[0;36mChecking erb template syntax for $module_path...\x1B[0m"
 cat $1 | erb -x -T - | ruby -c 2>&1 > $error_msg
 if [ $? -ne 0 ]; then
-    echo -en "\e[0;31m"
+    echo -en "\x1B[0;31m"
     cat $error_msg
     syntax_errors=`expr $syntax_errors + 1`
-    echo -e "Error: erb syntax error in $module_path (see above)\e[0m"
+    echo -e "Error: erb syntax error in $module_path (see above)\x1B[0m"
 fi
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "\e[0;31mError: $syntax_errors syntax errors found in templates. Commit will be aborted.\e[0m"
+    echo -e "\x1B[0;31mError: $syntax_errors syntax errors found in templates. Commit will be aborted.\x1B[0m"
     exit 1
 fi
 
