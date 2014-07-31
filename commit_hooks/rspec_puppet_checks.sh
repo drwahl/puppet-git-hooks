@@ -28,15 +28,15 @@ changedmodules=$(echo -e "$tmpchangedmodules" | sort -u)
 for module_dir in $changedmodules; do
     #only run rspec if the "spec" directory exists
     if [ -d "${module_dir}/spec" ]; then
-	echo -e "\e[0;36mRunning rspec-puppet tests for module $module_path...\e[0m"
+	echo -e "\x1B[0;36mRunning rspec-puppet tests for module $module_path...\x1B[0m"
 	cd $module_dir
 	#this will run rspec for every test in the module
 	rspec > $error_msg
 	RC=$?
 	if [ $RC -ne 0 ]; then
-	    echo -en "\e[0;31m"
+	    echo -en "\x1B[0;31m"
 	    cat $error_msg
-	    echo -e "Error: rspec-puppet test(s) failed for $module_dir (see above)\e[0m"
+	    echo -e "Error: rspec-puppet test(s) failed for $module_dir (see above)\x1B[0m"
 	    syntax_errors=`expr $syntax_errors + 1`
 	fi
     fi
@@ -47,7 +47,7 @@ cd $oldpwd > /dev/null
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "\e[0;31mError: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.\e[0m"
+    echo -e "\x1B[0;31mError: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.\x1B[0m"
     exit 1
 fi
 

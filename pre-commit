@@ -96,7 +96,7 @@ fi
 
 #summary
 if [ "$failures" -ne 0 ]; then
-    echo -e "\e[0;31mError: $failures subhooks failed. Aborting commit.\e[0m"
+    echo -e "\x1B[0;31mError: $failures subhooks failed. Aborting commit.\x1B[0m"
     exit 1
 fi
 
