@@ -43,6 +43,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     fi
 
     if type ruby >/dev/null 2>&1; then
+        echo $changedfile
         #check erb (template file) syntax
         if type erb >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
@@ -56,8 +57,8 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
             echo "erb not installed. Skipping erb template checks..."
         fi
 
-        #check hiera data (yaml/yml) syntax
-        if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
+        #check hiera data (yaml/yml/eyaml/eyml) syntax
+        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then 
             ${subhook_root}/yaml_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
