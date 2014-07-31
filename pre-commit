@@ -43,7 +43,6 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     fi
 
     if type ruby >/dev/null 2>&1; then
-        echo $changedfile
         #check erb (template file) syntax
         if type erb >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
