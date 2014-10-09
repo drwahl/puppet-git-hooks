@@ -28,6 +28,9 @@ if [ -f "$git_root/.git" ]; then
     fi
 fi
 
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
 for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
@@ -81,6 +84,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
         echo "puppet-lint not installed. Skipping puppet-lint tests..."
     fi
 done
+IFS=$SAVEIFS
 
 #rspec test validation
 if which rspec >/dev/null 2>&1; then
