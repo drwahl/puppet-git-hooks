@@ -67,8 +67,17 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
                 failures=`expr $failures + 1`
             fi
         fi
+
+        #check json (i.e. metadata.json) syntax
+        if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then 
+            ${subhook_root}/json_syntax_check.sh $changedfile
+            RC=$?
+            if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+            fi
+        fi
     else
-        echo "ruby not installed. Skipping erb/yaml checks..."
+        echo "ruby not installed. Skipping erb/yaml/json checks..."
     fi
 
     #puppet manifest styleguide compliance
