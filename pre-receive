@@ -8,6 +8,12 @@ hook_dir=$(dirname "$hook_path")
 subhook_root="$hook_dir/commit_hooks"
 tmptree=$(mktemp -d)
 
+# Prevent tput from throwing an error by ensuring that $TERM is always set
+if [ -z "$TERM" ]; then
+    TERM=dumb
+fi
+export TERM
+
 while read oldrev newrev refname; do
     git archive $newrev | tar x -C ${tmptree}
     for changedfile in $(git diff --name-only $oldrev $newrev --diff-filter=ACM); do
@@ -69,7 +75,7 @@ rm -rf ${tmptree}
 
 #summary
 if [ "$failures" -ne 0 ]; then
-    echo -e "\x1B[0;31mError: $failures subhooks failed. Declining push.\x1B[0m"
+    echo -e "$(tput setaf 1)Error: $failures subhooks failed. Declining push.$(tput sgr0)"
     exit 1
 fi
 
