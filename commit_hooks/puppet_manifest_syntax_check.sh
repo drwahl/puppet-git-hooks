@@ -11,8 +11,10 @@ error_msg=$(mktemp /tmp/error_msg_puppet-syntax.XXXXX)
 
 if [ $module_dir ]; then
     manifest_name=$(echo $manifest_path | sed -e 's|'$module_dir'||')
+    error_msg_filter="sed -e s|$module_dir||"
 else
     manifest_name="$manifest_path"
+    error_msg_filter="sed"
 fi
 
 # Get list of new/modified manifest and template files to check (in git index)
@@ -21,7 +23,7 @@ echo -e "$(tput setaf 6)Checking puppet manifest syntax for $manifest_name...$(t
 puppet parser validate --color=false $1 > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     syntax_errors=`expr $syntax_errors + 1`
-    cat $error_msg | sed -e 's|'$module_dir'||' -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
+    cat $error_msg | $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     echo -e "$(tput setaf 1)Error: puppet syntax error in $manifest_name (see above)$(tput sgr0)"
 fi
 rm -f $error_msg
