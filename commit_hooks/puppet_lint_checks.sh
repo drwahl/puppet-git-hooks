@@ -17,7 +17,19 @@ fi
 
 # De-lint puppet manifests
 echo -e "$(tput setaf 6)Checking puppet style guide compliance for $manifest_name...$(tput sgr0)"
-puppet-lint --fail-on-warnings --with-filename --no-80chars-check $manifest_path > $error_msg 2>&1
+
+# If a file named .puppet-lint.rc exists at the base of the repo then use it to
+# enable or disable checks.
+puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename"
+puppet_lint_rcfile="${2}.puppet-lint.rc"
+if [ -f $puppet_lint_rcfile ]; then
+    echo -e "$(tput setaf 6)Applying custom config from .puppet-lint.rc$(tput sgr0)"
+    puppet_lint_cmd="$puppet_lint_cmd --config $puppet_lint_rcfile"
+else
+    puppet_lint_cmd="$puppet_lint_cmd --no-80chars-check"
+fi
+
+$puppet_lint_cmd $1 2>&1 > $error_msg
 RC=$?
 if [ $RC -ne 0 ]; then
     syntax_errors=$(expr $syntax_errors + 1)
