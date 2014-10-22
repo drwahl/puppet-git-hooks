@@ -3,7 +3,9 @@
 failures=0
 RC=0
 
-subhook_root=hooks/commit_hooks
+hook_path=$(realpath $0)
+hook_dir=$(dirname "$hook_path")
+subhook_root="$hook_dir/commit_hooks"
 tmptree=$(mktemp -d)
 
 while read oldrev newrev refname; do
