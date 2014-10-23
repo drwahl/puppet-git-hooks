@@ -3,31 +3,47 @@
 # This script expects $1 to be passed and for $1 to be the filesystem location
 # to a puppet manifest file for which it will run style guide checks against.
 
+manifest_path="$1"
+module_dir="$2"
+
 syntax_errors=0
 error_msg=$(mktemp /tmp/error_msg_puppet-lint.XXXXX)
 
-if [ $2 ]; then
-    module_path=$(echo $1 | sed -e 's|'$2'||')
+if [ $module_dir ]; then
+    manifest_name=$(echo $manifest_path | sed -e 's|'$module_dir'||')
+    error_msg_filter="sed -e s|$module_dir||"
 else
-    module_path=$1
+    manifest_name="$manifest_path"
+    error_msg_filter="sed"
 fi
 
 # De-lint puppet manifests
-echo -e "\x1B[0;36mChecking puppet style guide compliance for $module_path...\x1B[0m"
-puppet-lint --fail-on-warnings --with-filename --no-80chars-check $1 2>&1 > $error_msg
+echo -e "$(tput setaf 6)Checking puppet style guide compliance for $manifest_name...$(tput sgr0)"
+
+# If a file named .puppet-lint.rc exists at the base of the repo then use it to
+# enable or disable checks.
+puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename"
+puppet_lint_rcfile="${2}.puppet-lint.rc"
+if [ -f $puppet_lint_rcfile ]; then
+    echo -e "$(tput setaf 6)Applying custom config from .puppet-lint.rc$(tput sgr0)"
+    puppet_lint_cmd="$puppet_lint_cmd --config $puppet_lint_rcfile"
+else
+    puppet_lint_cmd="$puppet_lint_cmd --no-80chars-check"
+fi
+
+$puppet_lint_cmd $1 2>&1 > $error_msg
 RC=$?
 if [ $RC -ne 0 ]; then
-    echo -en "\x1B[0;31m"
     syntax_errors=$(expr $syntax_errors + 1)
-    cat $error_msg
-    echo -e "Error: styleguide violation in $module_path (see above)\x1B[0m"
+    cat $error_msg | $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
+    echo -e "$(tput setaf 1)Error: styleguide violation in $manifest_name (see above)$(tput sgr0)"
 fi
 rm -f $error_msg
 
 if [ $syntax_errors -ne 0 ]; then
-    echo -e "\x1B[0;31mError: $syntax_errors styleguide violation(s) found. Commit will be aborted.
+    echo -e "Error: $syntax_errors styleguide violation(s) found. Commit will be aborted.
 Please follow the puppet style guide outlined at:
-http://docs.puppetlabs.com/guides/style_guide.html\x1B[0m"
+http://docs.puppetlabs.com/guides/style_guide.html" | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     exit 1
 fi
 

@@ -12,20 +12,18 @@ else
     module_path=$1
 fi
 
-# Get list of new/modified manifest and template files to check (in git index)
 # Check json file syntax
-echo -e "\x1B[0;36mChecking json syntax for $module_path...\x1B[0m"
+echo -e "$(tput setaf 6)Checking json syntax for $module_path...$(tput sgr0)"
 ruby -e "require 'json'; JSON.parse(File.read($1))" 2> $error_msg > /dev/null
 if [ $? -ne 0 ]; then
-    echo -en "\x1B[0;31m"
-    cat $error_msg
+    cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     syntax_errors=`expr $syntax_errors + 1`
-    echo -e "Error: json syntax error in $module_path (see above)\x1B[0m"
+    echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)"
 fi
 rm -f $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "\x1B[0;31mError: $syntax_errors syntax error(s) found in json file.  Commit will be aborted.\x1B[0m"
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in json file.  Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 

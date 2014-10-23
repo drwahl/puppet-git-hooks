@@ -28,17 +28,16 @@ changedmodules=$(echo -e "$tmpchangedmodules" | sort -u)
 for module_dir in $changedmodules; do
     #only run rspec if the "spec" directory exists
     if [ -d "${module_dir}/spec" ]; then
-	echo -e "\x1B[0;36mRunning rspec-puppet tests for module $module_path...\x1B[0m"
-	cd $module_dir
-	#this will run rspec for every test in the module
-	rspec > $error_msg
-	RC=$?
-	if [ $RC -ne 0 ]; then
-	    echo -en "\x1B[0;31m"
-	    cat $error_msg
-	    echo -e "Error: rspec-puppet test(s) failed for $module_dir (see above)\x1B[0m"
-	    syntax_errors=`expr $syntax_errors + 1`
-	fi
+        echo -e "$(tput setaf 6)Running rspec-puppet tests for module $module_path...$(tput sgr0)"
+        cd $module_dir
+        #this will run rspec for every test in the module
+        rspec > $error_msg
+        RC=$?
+        if [ $RC -ne 0 ]; then
+            cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
+            echo -e "$(tput setaf 1)Error: rspec-puppet test(s) failed for $module_dir (see above)$(tput sgr0)"
+            syntax_errors=`expr $syntax_errors + 1`
+        fi
     fi
 done
 
@@ -47,7 +46,7 @@ cd $oldpwd > /dev/null
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "\x1B[0;31mError: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.\x1B[0m"
+    echo -e "$(tput setaf 1)Error: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 
