@@ -27,7 +27,7 @@ while read oldrev newrev refname; do
 		# for a new branch oldrev is 0{40}, set newrev to branch name and oldrev to parent branch
 		if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
 						newrev=`git rev-parse --abbrev-ref HEAD`
-						oldrev=`git show-branch | ack '\*' | ack -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'`
+						oldrev=`git show-branch | grep '\*' | grep -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'`
 		fi
 
     for changedfile in $(git diff --name-only $oldrev $newrev --diff-filter=ACM); do
