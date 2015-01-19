@@ -23,6 +23,13 @@ export TERM
 
 while read oldrev newrev refname; do
     git archive $newrev | tar x -C ${tmptree}
+
+		# for a new branch oldrev is 0{40}, set newrev to branch name and oldrev to parent branch
+		if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
+						newrev=`git rev-parse --abbrev-ref HEAD`
+						oldrev=`git show-branch | ack '\*' | ack -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//'`
+		fi
+
     for changedfile in $(git diff --name-only $oldrev $newrev --diff-filter=ACM); do
         tmpmodule="$tmptree/$changedfile"
         #check puppet manifest syntax
