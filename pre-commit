@@ -7,10 +7,10 @@ RC=0
 subhook_root=$git_root/.git/hooks/commit_hooks
 
 hook_dir="$(dirname $0)"
-hook_symlink="$(readlink -f $0)"
+hook_symlink="$(readlink $0)"
 
 # Figure out where commit hooks are if pre-commit is setup as a symlink
-if [ ! -z "$hook_symlink" ]; then
+if [ ! -z "$hook_symlink" ] && ! [[ "$hook_symlink" == ../* ]]; then
   subhook_root="$(dirname $hook_symlink)/commit_hooks"
 fi
 
