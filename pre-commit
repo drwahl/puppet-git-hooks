@@ -1,5 +1,7 @@
 #!/bin/bash
 
+TERM=${TERM:-unknown}; export TERM
+
 git_root=`git rev-parse --show-toplevel`
 failures=0
 RC=0
