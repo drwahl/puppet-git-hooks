@@ -73,6 +73,15 @@ while read oldrev newrev refname; do
                     failures=`expr $failures + 1`
                 fi
             fi
+            
+            #check hiera data (json) syntax
+            if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then 
+                ${subhook_root}/json_syntax_check.sh $tmpmodule "${tmptree}/"
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                    failures=`expr $failures + 1`
+                fi
+            fi
         else
             echo "ruby not installed. Skipping erb/yaml checks..."
         fi
