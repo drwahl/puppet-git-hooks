@@ -19,3 +19,19 @@ Current supported pre-receive (server side) checks
 * Erb template syntax
 * Puppet-lint
 * Yaml (hiera data) syntax
+
+Installation
+============
+
+Clone this repository
+
+    git clone https://github.com/pixelated-project/puppet-git-hooks.git
+
+Go in the git hooks directory of you puppet git repository
+
+    cd <PATH_TO_YOUR_PUPPET_REPO>/.git/hooks
+
+Create symlinks to the `pre-commit` file and the `commit_hooks` directory
+
+    ln -s <PATH_TO_PUPPET-GIT-HOOKS_REPO>/pre-commit
+    ln -s <PATH_TO_PUPPET-GIT-HOOKS_REPO>/commit_hooks
