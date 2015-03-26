@@ -3,11 +3,11 @@
 
 if [ -f .git ];
 then
-	LOCATION="$(cat .git | awk '{print $2}')"
+	LOCATION="$(awk '{print $2}' .git)"
 	LOCATION="$LOCATION/hooks/pre-commit"
 else
 	LOCATION=".git/hooks/pre-commit"
 fi
 
-ln -s $HOME/puppet-git-hooks/pre-commit $LOCATION
+#ln -s $HOME/Projecten/Github.com/puppet-git-hooks/pre-commit $LOCATION
 echo "pre-commit hook deployed to $LOCATION"
