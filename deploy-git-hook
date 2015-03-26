@@ -9,5 +9,5 @@ else
 	LOCATION=".git/hooks/pre-commit"
 fi
 
-ln -s /home/Jan/Projecten/Github.com/puppet-git-hooks/pre-commit $LOCATION
+ln -s $HOME/puppet-git-hooks/pre-commit $LOCATION
 echo "pre-commit hook deployed to $LOCATION"

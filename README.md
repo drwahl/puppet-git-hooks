@@ -37,7 +37,7 @@ $ cat .git
 $ ln -s /path/to/this/repo/puppet-git-hooks/pre-commit ../path/to/git/dir/from/previous/command/hooks/pre-commit
 ```
 
-You could also create an alias in your bashrc file using the deploy-git-hook script from this repository.
+You could also create an alias in your bashrc file using the deploy-git-hook script from this repository. The deploy-git-hook script assumes you cloned the puppet-git-hooks repository in your $HOME directory for now.
 
 ```bash
 $ alias deploy-git-hook='. /path/to/this/repo/puppet-git-hooks/deploy-git-hook'
