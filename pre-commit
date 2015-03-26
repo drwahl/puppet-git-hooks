@@ -62,7 +62,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
         fi
 
         #check hiera data (yaml/yml/eyaml/eyml) syntax
-        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then
             ${subhook_root}/yaml_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -71,7 +71,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
         fi
 
         #check json (i.e. metadata.json) syntax
-        if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then
             ${subhook_root}/json_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -84,7 +84,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
 
     #puppet manifest styleguide compliance
     if type puppet-lint >/dev/null 2>&1; then
-        if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then
             ${subhook_root}/puppet_lint_checks.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -106,6 +106,15 @@ if which rspec >/dev/null 2>&1; then
     fi
 else
     echo "rspec not installed. Skipping rspec-puppet tests..."
+fi
+
+#r10k puppetfile syntax check
+if [ $changedfile = "Puppetfile" ]; then
+	${subhook_root}/r10k_syntax_check.sh
+	RC=$?
+	if [ "$RC" -ne 0 ]; then
+        	failures=`expr $failures + 1`
+	fi
 fi
 
 #summary
