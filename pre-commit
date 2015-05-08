@@ -1,17 +1,21 @@
 #!/bin/bash
 
+TERM=${TERM:-unknown}; export TERM
+
 git_root=`git rev-parse --show-toplevel`
 failures=0
 RC=0
 
-subhook_root=$git_root/.git/hooks/commit_hooks
-
 hook_dir="$(dirname $0)"
 hook_symlink="$(readlink $0)"
 
-# Figure out where commit hooks are if pre-commit is setup as a symlink
-if [ ! -z "$hook_symlink" ]; then
+# Figure out where commit hooks are
+if [ ! -z "$hook_symlink" ] && ! [[ "$hook_symlink" == ../* ]]; then
+  #pre-commit is setup as a symlink
   subhook_root="$(dirname $hook_symlink)/commit_hooks"
+else
+  #commit_hooks should be with pre-commit
+  subhook_root="${hook_dir}/commit_hooks"
 fi
 
 # If using submodules, we need to read proper subhook root
@@ -60,7 +64,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
         fi
 
         #check hiera data (yaml/yml/eyaml/eyml) syntax
-        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]; then
             ${subhook_root}/yaml_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -69,7 +73,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
         fi
 
         #check json (i.e. metadata.json) syntax
-        if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then
             ${subhook_root}/json_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -82,7 +86,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
 
     #puppet manifest styleguide compliance
     if type puppet-lint >/dev/null 2>&1; then
-        if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
+        if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then
             ${subhook_root}/puppet_lint_checks.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -104,6 +108,19 @@ if which rspec >/dev/null 2>&1; then
     fi
 else
     echo "rspec not installed. Skipping rspec-puppet tests..."
+fi
+
+#r10k puppetfile syntax check
+if which r10k >/dev/null 2>&1; then
+  if [ $changedfile = "Puppetfile" ]; then
+        ${subhook_root}/r10k_syntax_check.sh
+        RC=$?
+        if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+        fi
+  fi
+else
+    echo "r10k not installed. Skipping r10k Puppetfile test..."
 fi
 
 #summary
