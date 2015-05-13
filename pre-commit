@@ -6,14 +6,16 @@ git_root=`git rev-parse --show-toplevel`
 failures=0
 RC=0
 
-subhook_root=$git_root/.git/hooks/commit_hooks
-
 hook_dir="$(dirname $0)"
 hook_symlink="$(readlink $0)"
 
-# Figure out where commit hooks are if pre-commit is setup as a symlink
+# Figure out where commit hooks are
 if [ ! -z "$hook_symlink" ] && ! [[ "$hook_symlink" == ../* ]]; then
+  #pre-commit is setup as a symlink
   subhook_root="$(dirname $hook_symlink)/commit_hooks"
+else
+  #commit_hooks should be with pre-commit
+  subhook_root="${hook_dir}/commit_hooks"
 fi
 
 # If using submodules, we need to read proper subhook root
