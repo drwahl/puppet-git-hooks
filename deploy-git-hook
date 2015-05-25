@@ -79,14 +79,18 @@ fi
 if [ -f "${GIT_REPO}/.git" ]; then
   SUBMODULE_REPO=$(cat "${GIT_REPO}/.git" | grep 'gitdir' | awk '{print $2}')
   GIT_REPO="$(cd "${GIT_REPO}" ; cd "${SUBMODULE_REPO}" ; pwd)"
+else
+  GIT_REPO="${GIT_REPO}/.git"
 fi
+
+GIT_REPO=$(cd "${GIT_REPO}" ; pwd)
 
 # Make sure the repo specified is valid, submodule or normal
 if [[ -n "${SUBMODULE_REPO}" && ! -d "${GIT_REPO}" ]]; then
-  echo "Error: Submodule does not appear to be a valid repository" >&2
+  echo "Error: Submodule not a valid repository" >&2
   exit -3
-elif [[ -z "${SUBMODULE_REPO}" && ! -d "${GIT_REPO}/.git" ]]; then
-  echo "Error: ${GIT_REPO} is not a valid git repository" >&2
+elif [[ -z "${SUBMODULE_REPO}" && ! -d "${GIT_REPO}" ]]; then
+  echo "Error: Not a valid repository" >&2
   exit -3
 fi
 
