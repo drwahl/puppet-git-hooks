@@ -37,18 +37,30 @@ $ cat .git
 $ ln -s /path/to/this/repo/puppet-git-hooks/pre-commit ../path/to/git/dir/from/previous/command/hooks/pre-commit
 ```
 
-You could also create an alias in your bashrc file using the deploy-git-hook script from this repository. The deploy-git-hook script assumes you cloned the puppet-git-hooks repository in your $HOME directory for now.
+deploy-git-hook
+===============
 
-```bash
-$ alias deploy-git-hook='. /path/to/this/repo/puppet-git-hooks/deploy-git-hook'
+  usage: deploy-git-hook -d /path/to/git/repository [-a] [-c] [-r] [-u]
 
-```
+    -h            this help screen
+    -d path       install the hooks to the specified path
+    -a            deploy pre-commit and pre-receive hooks
+    -c            deploy only the pre-commit hook
+    -r            deploy only the pre-receive hook
+    -u            deploy only the post-update hook
 
-When you added the alias and sourced your .bashrc file you can deploy the git hook by executing the command
+  returns status code of 0 for success, otherwise, failure
 
-```bash
-$ deploy-git-hook
-pre-commit hook deployed to .git/hooks/pre-commit
-```
+  examples:
 
-The deploy script will figure out for you if it needs to deploy through a submodule or not.
+  1) to install pre-commit and pre-receive the hooks to foo git repo:
+
+    deploy-git-hook -d /path/to/foo -a
+
+  2) to install only the pre-commit hook to bar git repo:
+
+    deploy-git-hook -d /path/to/bar -c
+
+  3) to install only the pre-commit and pre-receive hook to foobar git repo:
+
+    deploy-git-hook -d /path/to/foobar -c -r
