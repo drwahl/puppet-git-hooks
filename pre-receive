@@ -27,6 +27,12 @@ if [ -z "$TERM" ]; then
 fi
 export TERM
 
+# Decide if we want puppet-lint
+CHECK_PUPPET_LINT=true
+if [ -e ${subhook_root}/config.cfg ] ; then
+    source ${subhook_root}/config.cfg
+fi
+
 while read oldrev newrev refname; do
     git archive $newrev | tar x -C ${tmptree}
 
@@ -87,16 +93,18 @@ while read oldrev newrev refname; do
         fi
 
         #puppet manifest styleguide compliance
-        if type puppet-lint >/dev/null 2>&1; then
-            if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then 
-                ${subhook_root}/puppet_lint_checks.sh $tmpmodule "${tmptree}/"
-                RC=$?
-                if [ "$RC" -ne 0 ]; then
-                    failures=`expr $failures + 1`
+        if [ "$CHECK_PUPPET_LINT" = true ] ; then
+            if type puppet-lint >/dev/null 2>&1; then
+                if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then
+                    ${subhook_root}/puppet_lint_checks.sh $tmpmodule "${tmptree}/"
+                    RC=$?
+                    if [ "$RC" -ne 0 ]; then
+                        failures=`expr $failures + 1`
+                    fi
                 fi
+            else
+                echo "puppet-lint not installed. Skipping puppet-lint tests..."
             fi
-        else
-            echo "puppet-lint not installed. Skipping puppet-lint tests..."
         fi
     done
 done
