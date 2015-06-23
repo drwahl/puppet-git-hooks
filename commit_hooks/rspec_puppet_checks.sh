@@ -15,7 +15,7 @@ oldpwd=$(pwd)
 tmpchangedmodules=''
 #get a list of files changed under the modules directory so we can
 #sort/uniq them later
-for changedfile in `git diff --raw --cached --name-only --diff-filter=ACM | grep '^modules' | egrep '\.pp$|\.rb$'`; do
+for changedfile in `git diff --raw --cached --name-only --diff-filter=ACM | grep '^modules' | grep -E '\.pp$|\.rb$'`; do
     changeddir=$(dirname $changedfile | cut -d"/" -f1,2)
     tmpchangedmodules="$tmpchangedmodules\n$changeddir"
 done
