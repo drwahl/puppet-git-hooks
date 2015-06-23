@@ -24,7 +24,7 @@ echo -e "$(tput setaf 6)Checking puppet style guide compliance for $manifest_nam
 
 # If a file named .puppet-lint.rc exists at the base of the repo then use it to
 # enable or disable checks.
-puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename"
+puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
 puppet_lint_rcfile="${3}.puppet-lint.rc"
 if [ -f $puppet_lint_rcfile ]; then
     echo -e "$(tput setaf 6)Applying custom config from .puppet-lint.rc$(tput sgr0)"
