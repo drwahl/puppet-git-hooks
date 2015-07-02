@@ -27,10 +27,18 @@ echo -e "$(tput setaf 6)Checking puppet style guide compliance for $manifest_nam
 puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
 puppet_lint_rcfile="${3}.puppet-lint.rc"
 if [ -f $puppet_lint_rcfile ]; then
-    echo -e "$(tput setaf 6)Applying custom config from .puppet-lint.rc$(tput sgr0)"
+    echo -e "$(tput setaf 6)Applying custom config from ${puppet_lint_rcfile}$(tput sgr0)"
     puppet_lint_cmd="$puppet_lint_cmd --config $puppet_lint_rcfile"
 else
     puppet_lint_cmd="$puppet_lint_cmd --no-80chars-check"
+fi
+
+# If a file named .puppet-lint.rc exists in the directory where the file is located
+# enable or disable checks.
+puppet_lint_rcfile=`dirname ${manifest_name}`"/.puppet-lint.rc"
+if [ -f $puppet_lint_rcfile ]; then
+    echo -e "$(tput setaf 6)Applying custom config from ${puppet_lint_rcfile}$(tput sgr0)"
+    puppet_lint_cmd="$puppet_lint_cmd --config $puppet_lint_rcfile"
 fi
 
 $puppet_lint_cmd $2 2>&1 > $error_msg
