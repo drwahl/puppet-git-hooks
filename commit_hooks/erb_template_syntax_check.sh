@@ -16,7 +16,7 @@ fi
 
 # Check ERB template syntax
 echo -e "$(tput setaf 6)Checking erb template syntax for $module_path...$(tput sgr0)"
-cat $1 | erb -x -T - | ruby -c > $error_msg 2>&1
+cat $1 | erb -P -x -T - | ruby -c > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     syntax_errors=`expr $syntax_errors + 1`
