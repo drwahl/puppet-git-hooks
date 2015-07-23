@@ -64,3 +64,24 @@ deploy-git-hook
   3) to install only the pre-commit and pre-receive hook to foobar git repo:
 
     deploy-git-hook -d /path/to/foobar -c -r
+
+In a wrapper
+===============
+You can call from your own custom pre-commit. This allows you to combine these with your own checks
+
+For example, if you've cloned this repo to ~/.puppet-git-hooks
+
+
+The .git/hooks/pre-commit with your puppet code might look like this
+
+```bash
+#!bin/bash
+
+# my_other_checks
+
+# puppet-git-hooks
+if [ -e ~/.puppet-git-hooks/pre-commit ]; then
+~/.puppet-git-hooks/pre-commit
+fi
+```
+
