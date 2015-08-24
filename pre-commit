@@ -120,7 +120,7 @@ fi
 
 #r10k puppetfile syntax check
 if which r10k >/dev/null 2>&1; then
-  if [ $changedfile = "Puppetfile" ]; then
+  if [ "$changedfile" = "Puppetfile" ]; then
         ${subhook_root}/r10k_syntax_check.sh
         RC=$?
         if [ "$RC" -ne 0 ]; then
