@@ -10,6 +10,7 @@ usage() {
     -c            deploy only the pre-commit hook
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
+    -g            enable to install in Git Lab repo custom_hooks
 
   returns status code of 0 for success, otherwise, failure
 
@@ -30,7 +31,7 @@ usage() {
 EOF
 }
 
-while getopts ":d:achru" opt; do
+while getopts ":d:acghru" opt; do
   case $opt in
     a)
       INST_COMMIT=1
@@ -41,6 +42,9 @@ while getopts ":d:achru" opt; do
       ;;
     d)
       GIT_REPO="$OPTARG"
+      ;;
+    g)
+      GITLAB_REPO=1
       ;;
     h)
       usage
@@ -98,21 +102,33 @@ fi
 HOOKS_DIR=$(dirname "${0}")
 HOOKS_DIR=$(cd "${HOOKS_DIR}" ; pwd)
 
+# Check if it's Git Lab, needs to go into custom_hooks
+if [ "${GITLAB_REPO}" = "1" ]; then
+  REAL_HOOKS_DIR="custom_hooks"
+else
+  REAL_HOOKS_DIR="hooks"
+fi
+
+# Make sure the hooks directory exists -- mainly for Git Lab
+if [ ! -d "${GIT_REPO}/${REAL_HOOKS_DIR}" ]; then
+  mkdir -p "${GIT_REPO}/${REAL_HOOKS_DIR}"
+fi
+
 # Install the hooks!
 if [ "${INST_COMMIT}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/pre-commit" "${GIT_REPO}/hooks/pre-commit" \
+  ln -sf "${HOOKS_DIR}/pre-commit" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-commit" \
   && echo "pre-commit hook deployed successfully" \
   || ( echo "pre-commit hook failed to deploy" >&2 ; exit -4 )
 fi
 
 if [ "${INST_RECEIVE}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/hooks/pre-receive" \
+  ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
   && echo "pre-receive hook deployed successfully" \
   || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
 fi
 
 if [ "${INST_UPDATE}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/post-update" "${GIT_REPO}/hooks/post-update" \
+  ln -sf "${HOOKS_DIR}/post-update" "${GIT_REPO}/${REAL_HOOKS_DIR}/post-update" \
   && echo "post-update hook deployed successfully" \
   || ( echo "post-update hook failed to deploy" >&2 ; exit -6 )
 fi
