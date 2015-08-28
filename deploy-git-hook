@@ -10,7 +10,7 @@ usage() {
     -c            deploy only the pre-commit hook
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
-    -g            enable if needs to be installed to Git Lab repo
+    -g            enable to install in Git Lab repo custom_hooks
 
   returns status code of 0 for success, otherwise, failure
 

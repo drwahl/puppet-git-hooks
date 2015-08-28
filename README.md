@@ -48,6 +48,7 @@ deploy-git-hook
     -c            deploy only the pre-commit hook
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
+    -g            enable to install in Git Lab repo custom_hooks
 
   returns status code of 0 for success, otherwise, failure
 
