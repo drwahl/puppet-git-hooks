@@ -20,7 +20,7 @@ fi
 # Get list of new/modified manifest and template files to check (in git index)
 # Check puppet manifest syntax
 echo -e "$(tput setaf 6)Checking puppet manifest syntax for $manifest_name...$(tput sgr0)"
-puppet parser validate --color=false $1 > $error_msg 2>&1
+puppet parser validate --parser future --color=false $1 > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     syntax_errors=`expr $syntax_errors + 1`
     cat $error_msg | $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
