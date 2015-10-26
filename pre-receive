@@ -28,7 +28,9 @@ fi
 export TERM
 
 # Decide if we want puppet-lint
+# Decide if we want the puppet future parser (already on puppet 4?)
 CHECK_PUPPET_LINT="enabled"
+USE_PUPPET_FUTURE_PARSER="enabled"
 if [ -e ${subhook_root}/config.cfg ] ; then
     source ${subhook_root}/config.cfg
 fi
@@ -47,7 +49,7 @@ while read oldrev newrev refname; do
         #check puppet manifest syntax
         if type puppet >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
-                ${subhook_root}/puppet_manifest_syntax_check.sh $tmpmodule "${tmptree}/"
+                ${subhook_root}/puppet_manifest_syntax_check.sh $tmpmodule "${tmptree}/" USE_PUPPET_FUTURE_PARSER
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                     failures=`expr $failures + 1`
