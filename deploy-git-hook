@@ -32,7 +32,7 @@ usage() {
 EOF
 }
 
-while getopts ":d:acghru" opt; do
+while getopts ":d:acghlru" opt; do
   case $opt in
     a)
       INST_COMMIT=1
