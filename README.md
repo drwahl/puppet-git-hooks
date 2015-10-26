@@ -7,6 +7,7 @@ Current supported pre-commit (client side) checks
 =================================================
 
 * Puppet manifest syntax
+* Puppet epp template syntax
 * Erb template syntax
 * Puppet-lint
 * Rspec-puppet
@@ -17,6 +18,7 @@ Current supported pre-receive (server side) checks
 ==================================================
 
 * Puppet manifest syntax
+* Puppet epp template syntax
 * Erb template syntax
 * Puppet-lint
 * Yaml (hiera data) syntax
