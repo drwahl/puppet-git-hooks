@@ -140,7 +140,7 @@ if [ "${GITOLITE_REPO}" = "1" ]; then
   # Change naming on files to be more descriptive for gitolite configuration and prevent possible naming collision
   if [ "${INST_RECEIVE}" = "1" ]; then
     cp -f "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/puppet-git-hooks.pre-receive" \
-    && cp -rf "${HOOKS_DIR}/commit_hooks" "${GIT_REPO}/${REAL_HOOKS_DIR}/commit_hooks" \
+    && cp -rf "${HOOKS_DIR}/commit_hooks" "${GIT_REPO}/${REAL_HOOKS_DIR}/" \
     && echo "pre-receive hook deployed successfully" \
     || ( echo "pre-receive hook failed to deploy to gitolite repo" >&2 ; exit -9 )
   fi
