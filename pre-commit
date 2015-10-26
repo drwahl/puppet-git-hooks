@@ -44,7 +44,13 @@ IFS=$(echo -en "\n\b")
 for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
-        if [ $(echo $changedfile | grep -q '\.*.pp$'; echo $?) -eq 0 ]; then
+        if [ $(echo $changedfile | grep -q '\.*\.epp$'; echo $?) -eq 0 ]; then
+            ${subhook_root}/puppet_epp_syntax_check.sh $changedfile
+            RC=$?
+            if [ "$RC" -ne 0 ]; then
+                failures=`expr $failures + 1`
+            fi
+        elif [ $(echo $changedfile | grep -q '\.*\.pp$'; echo $?) -eq 0 ]; then
             ${subhook_root}/puppet_manifest_syntax_check.sh $changedfile
             RC=$?
             if [ "$RC" -ne 0 ]; then
@@ -93,7 +99,7 @@ for changedfile in `git diff --cached --name-only --diff-filter=ACM`; do
     #puppet manifest styleguide compliance
     if [ "$CHECK_PUPPET_LINT" != "disabled" ] ; then
         if type puppet-lint >/dev/null 2>&1; then
-            if [ $(echo $changedfile | grep -q '\.*.pp$' ; echo $?) -eq 0 ]; then
+            if [ $(echo $changedfile | grep -q '\.*\.pp$' ; echo $?) -eq 0 ]; then
                 ${subhook_root}/puppet_lint_checks.sh $CHECK_PUPPET_LINT $changedfile
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
