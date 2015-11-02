@@ -11,6 +11,7 @@ usage() {
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
     -g            enable to install in Git Lab repo custom_hooks
+    -l		  enable to install in Gitolite 3.6+ repo-specific hooks
 
   returns status code of 0 for success, otherwise, failure
 
@@ -31,7 +32,7 @@ usage() {
 EOF
 }
 
-while getopts ":d:acghru" opt; do
+while getopts ":d:acghlru" opt; do
   case $opt in
     a)
       INST_COMMIT=1
@@ -49,6 +50,9 @@ while getopts ":d:acghru" opt; do
     h)
       usage
       exit -1
+      ;;
+    l)
+      GITOLITE_REPO=1
       ;;
     r)
       INST_RECEIVE=1
@@ -79,6 +83,14 @@ if [ -z "${GIT_REPO}" ]; then
   exit -3
 fi
 
+# Validate the provided repository is a gitolite repository
+if [ "${GITOLITE_REPO}" = "1" ]; then
+  if [ ! -f "${GIT_REPO}/conf/gitolite.conf" ]; then
+    echo "Error: Not a gitolite admin repository" >&2
+    exit -7
+  fi
+fi
+
 # Check if the repo specified is a submodule
 if [ -f "${GIT_REPO}/.git" ]; then
   SUBMODULE_REPO=$(cat "${GIT_REPO}/.git" | grep 'gitdir' | awk '{print $2}')
@@ -105,30 +117,55 @@ HOOKS_DIR=$(cd "${HOOKS_DIR}" ; pwd)
 # Check if it's Git Lab, needs to go into custom_hooks
 if [ "${GITLAB_REPO}" = "1" ]; then
   REAL_HOOKS_DIR="custom_hooks"
+# Check if it's Gitolite, needs repo-specific hook directory
+elif [ "${GITOLITE_REPO}" = "1" ]; then
+  REAL_HOOKS_DIR="../local/hooks/repo-specific"
 else
   REAL_HOOKS_DIR="hooks"
 fi
 
-# Make sure the hooks directory exists -- mainly for Git Lab
+# Make sure the hooks directory exists -- mainly for Git Lab and Gitolite
 if [ ! -d "${GIT_REPO}/${REAL_HOOKS_DIR}" ]; then
   mkdir -p "${GIT_REPO}/${REAL_HOOKS_DIR}"
 fi
 
 # Install the hooks!
-if [ "${INST_COMMIT}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/pre-commit" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-commit" \
-  && echo "pre-commit hook deployed successfully" \
-  || ( echo "pre-commit hook failed to deploy" >&2 ; exit -4 )
-fi
+if [ "${GITOLITE_REPO}" = "1" ]; then
+  if [ "${INST_COMMIT}" = "1" ]; then
+    echo "Error: pre-commit hooks outside of Gitolite's scope, use non-gitolite arguments to local repo" >&2
+    exit -8
+  fi
 
-if [ "${INST_RECEIVE}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
-  && echo "pre-receive hook deployed successfully" \
-  || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
-fi
+  # Do real copies instead of symlinks in order to not require submodules
+  # Change naming on files to be more descriptive for gitolite configuration and prevent possible naming collision
+  if [ "${INST_RECEIVE}" = "1" ]; then
+    cp -f "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/puppet-git-hooks.pre-receive" \
+    && cp -rf "${HOOKS_DIR}/commit_hooks" "${GIT_REPO}/${REAL_HOOKS_DIR}/" \
+    && echo "pre-receive hook deployed successfully" \
+    || ( echo "pre-receive hook failed to deploy to gitolite repo" >&2 ; exit -9 )
+  fi
 
-if [ "${INST_UPDATE}" = "1" ]; then
-  ln -sf "${HOOKS_DIR}/post-update" "${GIT_REPO}/${REAL_HOOKS_DIR}/post-update" \
-  && echo "post-update hook deployed successfully" \
-  || ( echo "post-update hook failed to deploy" >&2 ; exit -6 )
+  if [ "${INST_UPDATE}" = "1" ]; then
+    cp -f "${HOOKS_DIR}/post-update" "${GIT_REPO}/${REAL_HOOKS_DIR}/puppet-git-hooks.post-update" \
+    && echo "post-update hook deployed successfully" \
+    || ( echo "post-update hook failed to deploy to gitolite repo" >&2 ; exit -10 )
+  fi
+else
+  if [ "${INST_COMMIT}" = "1" ]; then
+    ln -sf "${HOOKS_DIR}/pre-commit" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-commit" \
+    && echo "pre-commit hook deployed successfully" \
+    || ( echo "pre-commit hook failed to deploy" >&2 ; exit -4 )
+  fi
+
+  if [ "${INST_RECEIVE}" = "1" ]; then
+    ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
+    && echo "pre-receive hook deployed successfully" \
+    || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
+  fi
+
+  if [ "${INST_UPDATE}" = "1" ]; then
+    ln -sf "${HOOKS_DIR}/post-update" "${GIT_REPO}/${REAL_HOOKS_DIR}/post-update" \
+    && echo "post-update hook deployed successfully" \
+    || ( echo "post-update hook failed to deploy" >&2 ; exit -6 )
+  fi
 fi
