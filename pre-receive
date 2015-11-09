@@ -35,7 +35,7 @@ if [ -e ${subhook_root}/config.cfg ] ; then
     source ${subhook_root}/config.cfg
 fi
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
-case `puppet -version` in
+case `puppet --version` in
   2*) ;&
   3.0*) ;&
   3.1*) ;&
