@@ -57,7 +57,7 @@ while read oldrev newrev refname; do
         #check puppet manifest syntax
         if type puppet >/dev/null 2>&1; then
             if [ $(echo $changedfile | grep -q '\.*\.epp$'; echo $?) -eq 0 ]; then
-                ${subhook_root}/puppet_epp_syntax_check.sh $changedfile
+                ${subhook_root}/puppet_epp_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                     failures=`expr $failures + 1`
