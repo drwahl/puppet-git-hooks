@@ -22,6 +22,19 @@ if [ $? -ne 0 ]; then
 fi
 rm -f $error_msg
 
+if which metadata-json-lint > /dev/null 2>&1; then
+    if [[ "$(basename $1)" == 'metadata.json' ]]; then
+        metadata-json-lint $1 2> $error_msg > /dev/null
+        if [ $? -ne 0 ]; then 
+            cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
+            syntax_errors=`expr $syntax_errors + 1`
+            echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)"
+        fi            
+    fi
+else
+    echo "metadata-json-lint gem not installed. Skipping metadata-json-lint tests..."
+fi
+
 if [ "$syntax_errors" -ne 0 ]; then
     echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in json file.  Commit will be aborted.$(tput sgr0)"
     exit 1
