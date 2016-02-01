@@ -11,7 +11,8 @@ usage() {
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
     -g            enable to install in Git Lab repo custom_hooks
-    -l		  enable to install in Gitolite 3.6+ repo-specific hooks
+    -l		        enable to install in Gitolite 3.6+ repo-specific hooks
+    -b            enable to install in Stash/BitBucket Server [pre/post]-receive.d
 
   returns status code of 0 for success, otherwise, failure
 
@@ -32,11 +33,14 @@ usage() {
 EOF
 }
 
-while getopts ":d:acghlru" opt; do
+while getopts ":d:abcghlru" opt; do
   case $opt in
     a)
       INST_COMMIT=1
       INST_RECEIVE=1
+      ;;
+    b)
+      BITBUCKET_REPO=1
       ;;
     c)
       INST_COMMIT=1
@@ -95,6 +99,8 @@ fi
 if [ -f "${GIT_REPO}/.git" ]; then
   SUBMODULE_REPO=$(cat "${GIT_REPO}/.git" | grep 'gitdir' | awk '{print $2}')
   GIT_REPO="$(cd "${GIT_REPO}" ; cd "${SUBMODULE_REPO}" ; pwd)"
+elif [ "${BITBUCKET_REPO}" = "1" ]; then
+  GIT_REPO="${GIT_REPO}"
 else
   GIT_REPO="${GIT_REPO}/.git"
 fi
@@ -158,9 +164,16 @@ else
   fi
 
   if [ "${INST_RECEIVE}" = "1" ]; then
-    ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
-    && echo "pre-receive hook deployed successfully" \
-    || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
+    if [ "${BITBUCKET_REPO}" = "1" ]; then 
+      # Use pre-receive.d directory and 'full' name for BitBucket
+      ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive.d/puppet-git-hooks-pre-receive" \
+      && echo "pre-receive hook deployed successfully" \
+      || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
+    else
+      ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
+      && echo "pre-receive hook deployed successfully" \
+      || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
+    fi
   fi
 
   if [ "${INST_UPDATE}" = "1" ]; then
