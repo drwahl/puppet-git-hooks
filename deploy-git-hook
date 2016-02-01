@@ -33,7 +33,7 @@ usage() {
 EOF
 }
 
-while getopts ":d:acghlru" opt; do
+while getopts ":d:abcghlru" opt; do
   case $opt in
     a)
       INST_COMMIT=1
@@ -99,6 +99,8 @@ fi
 if [ -f "${GIT_REPO}/.git" ]; then
   SUBMODULE_REPO=$(cat "${GIT_REPO}/.git" | grep 'gitdir' | awk '{print $2}')
   GIT_REPO="$(cd "${GIT_REPO}" ; cd "${SUBMODULE_REPO}" ; pwd)"
+elif [ "${BITBUCKET_REPO}" = "1" ]; then
+  GIT_REPO="${GIT_REPO}"
 else
   GIT_REPO="${GIT_REPO}/.git"
 fi
@@ -165,11 +167,13 @@ else
     if [ "${BITBUCKET_REPO}" = "1" ]; then 
       # Use pre-receive.d directory and 'full' name for BitBucket
       ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive.d/puppet-git-hooks-pre-receive" \
+      && echo "pre-receive hook deployed successfully" \
+      || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
     else
       ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive" \
+      && echo "pre-receive hook deployed successfully" \
+      || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
     fi
-    && echo "pre-receive hook deployed successfully" \
-    || ( echo "pre-receive hook failed to deploy" >&2 ; exit -5 )
   fi
 
   if [ "${INST_UPDATE}" = "1" ]; then
