@@ -1,3 +1,7 @@
+Looking for additional maintners.  I do not use puppet on a daily basis anymore, so I'd appreciate an extra
+help ensuring this project meets the needs of the people using it.  Please contact me through github if you
+are interested in helping maintain this project.  Thank you!
+
 puppet-git-hooks
 ================
 
