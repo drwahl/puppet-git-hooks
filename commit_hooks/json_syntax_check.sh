@@ -24,7 +24,7 @@ rm -f $error_msg
 
 if which metadata-json-lint > /dev/null 2>&1; then
     if [[ "$(basename $1)" == 'metadata.json' ]]; then
-        metadata-json-lint $1 2> $error_msg > /dev/null
+        metadata-json-lint $1 2> $error_msg  >&2
         if [ $? -ne 0 ]; then 
             cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
             syntax_errors=`expr $syntax_errors + 1`
