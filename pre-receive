@@ -75,7 +75,7 @@ while read oldrev newrev refname; do
 
         if type ruby >/dev/null 2>&1; then
             #check ruby syntax
-            if [ $(echo $changedfile | grep -q '\.*.rb$'; echo $?) -eq 0 ]; then
+            if [ $(echo $changedfile | grep -q '\.*\.rb$'; echo $?) -eq 0 ]; then
                 ${subhook_root}/ruby_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
@@ -85,7 +85,7 @@ while read oldrev newrev refname; do
             
             #check erb (template file) syntax
             if type erb >/dev/null 2>&1; then
-                if [ $(echo $changedfile | grep -q '\.*.erb$'; echo $?) -eq 0 ]; then
+                if [ $(echo $changedfile | grep -q '\.*\.erb$'; echo $?) -eq 0 ]; then
                     ${subhook_root}/erb_template_syntax_check.sh $tmpmodule "${tmptree}/"
                     RC=$?
                     if [ "$RC" -ne 0 ]; then
@@ -97,7 +97,7 @@ while read oldrev newrev refname; do
             fi
 
             #check hiera data (yaml/yml) syntax
-            if [ $(echo $changedfile | grep -q '\.*.yaml$\|\.*.yml$'; echo $?) -eq 0 ]; then 
+            if [ $(echo $changedfile | grep -q '\.*\.yaml$\|\.*\.yml$'; echo $?) -eq 0 ]; then 
                 ${subhook_root}/yaml_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
@@ -106,7 +106,7 @@ while read oldrev newrev refname; do
             fi
             
             #check hiera data (json) syntax
-            if [ $(echo $changedfile | grep -q '\.*.json$'; echo $?) -eq 0 ]; then 
+            if [ $(echo $changedfile | grep -q '\.*\.json$'; echo $?) -eq 0 ]; then 
                 ${subhook_root}/json_syntax_check.sh $tmpmodule "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
