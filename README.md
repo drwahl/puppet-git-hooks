@@ -24,6 +24,7 @@ Current supported pre-receive (server side) checks
 * Puppet manifest syntax
 * Puppet epp template syntax
 * Erb template syntax
+* Ruby syntax
 * Puppet-lint
 * Yaml (hiera data) syntax
 
