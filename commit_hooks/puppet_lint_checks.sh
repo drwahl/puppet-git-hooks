@@ -44,7 +44,7 @@ fi
 $puppet_lint_cmd "$2" 2>"$error_msg" >&2
 RC=$?
 if [[ $RC -ne 0 ]]; then
-  syntax_errors=$((syntax_errors + 1))
+  syntax_errors=$(wc -l "$error_msg" | awk '{print $1}')
     $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
     echo -e "$(tput setaf 1)Error: styleguide violation in $manifest_name (see above)$(tput sgr0)"
 fi
