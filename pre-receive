@@ -51,6 +51,7 @@ while read -r oldrev newrev refname; do
 
     for changedfile in $(git diff --name-only "$oldrev" "$newrev" --diff-filter=ACM); do
         tmpmodule="$tmptree/$changedfile"
+        [[ -f "$tmpmodule" ]] || continue
         #check puppet manifest syntax
         if type puppet >/dev/null 2>&1; then
             if [[ $(echo "$changedfile" | grep -q '\.*\.epp$'; echo $?) -eq 0 ]]; then
