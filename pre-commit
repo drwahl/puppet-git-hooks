@@ -42,6 +42,7 @@ SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 for changedfile in $(git diff --cached --name-only --diff-filter=ACM); do
+    [[ -f "$changedfile" ]] || continue
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
         if [[ $(echo "$changedfile" | grep -q '\.*\.epp$'; echo $?) -eq 0 ]]; then
