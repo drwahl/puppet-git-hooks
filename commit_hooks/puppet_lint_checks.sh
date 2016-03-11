@@ -11,6 +11,8 @@ module_dir="$3"
 syntax_errors=0
 error_msg="$(mktemp /tmp/error_msg_puppet-lint.XXXXX)"
 
+opts=${PUPPET_LINT_OPTIONS:-"--no-80chars-check"}
+
 if [[ $module_dir ]]; then
     manifest_name="${manifest_path##*$module_dir}"
     error_msg_filter="sed -e s|$module_dir||"
@@ -30,7 +32,7 @@ if [[ -f $puppet_lint_rcfile ]]; then
     echo -e "$(tput setaf 6)Applying custom config from ${puppet_lint_rcfile}$(tput sgr0)"
     puppet_lint_cmd="$puppet_lint_cmd --config $puppet_lint_rcfile"
 else
-    puppet_lint_cmd="$puppet_lint_cmd --no-80chars-check"
+    puppet_lint_cmd="$puppet_lint_cmd $opts"
 fi
 
 # If a file named .puppet-lint.rc exists in the directory where the file is located
