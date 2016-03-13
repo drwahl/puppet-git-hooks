@@ -83,7 +83,7 @@ For example, if you've cloned this repo to ~/.puppet-git-hooks
 The .git/hooks/pre-commit with your puppet code might look like this
 
 ```bash
-#!bin/bash
+#!/bin/bash
 
 # my_other_checks
 
