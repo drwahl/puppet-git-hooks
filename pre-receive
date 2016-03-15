@@ -129,6 +129,18 @@ while read -r oldrev newrev refname; do
                 echo "puppet-lint not installed. Skipping puppet-lint tests..."
             fi
         fi
+        #r10k puppetfile syntax check
+        if hash r10k >/dev/null 2>&1; then
+          if [ "$changedfile" = "Puppetfile" ]; then
+                ${subhook_root}/r10k_syntax_check.sh $tmptree/$changedfile
+                RC=$?
+                if [ "$RC" -ne 0 ]; then
+                       failures=`expr $failures + 1`
+                fi
+          fi
+        else
+            echo "r10k not installed. Skipping r10k Puppetfile test..."
+        fi
     done
 done
 rm -rf "$tmptree"
