@@ -31,6 +31,7 @@ export TERM
 # Decide if we want puppet-lint
 # Decide if we want the puppet future parser (already on puppet 4?)
 CHECK_PUPPET_LINT="enabled"
+CHECK_TAG_METADATA="enabled"
 USE_PUPPET_FUTURE_PARSER="enabled"
 if [[ -e ${subhook_root}/config.cfg ]] ; then
     source "${subhook_root}/config.cfg"
@@ -47,6 +48,20 @@ while read -r oldrev newrev refname; do
     if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
       newrev=$(git rev-parse --abbrev-ref HEAD)
       oldrev=$(git show-branch | grep '\*' | grep -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
+    fi
+
+    if [[ $CHECK_TAG_METADATA != 'disabled' ]]; then
+        # check that the version in the tag is the version in metadata.json
+        case "$refname" in
+          refs/tags/*)
+            tagname=$(basename $refname)
+            ${subhook_root}/metadata_version_matches_tag.sh "$tmptree" "$tagname"
+            RC=$?
+            if [[ $RC -ne 0 ]]; then
+              failures=$((failures + 1))
+            fi
+          ;;
+        esac
     fi
 
     for changedfile in $(git diff --name-only "$oldrev" "$newrev" --diff-filter=ACM); do
