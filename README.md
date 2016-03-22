@@ -27,6 +27,7 @@ Current supported pre-receive (server side) checks
 * Ruby syntax
 * Puppet-lint
 * Yaml (hiera data) syntax
+* Check tag against metadata.json
 
 Usage
 =====
