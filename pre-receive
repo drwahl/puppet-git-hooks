@@ -42,6 +42,14 @@ case $(puppet --version) in
 esac
 
 while read -r oldrev newrev refname; do
+
+    # workaround: deleting a branch should skip the checks
+    if [[ $newrev == "0000000000000000000000000000000000000000" ]]; then
+        echo "Skipping file checks this is a branch delete..."
+        rm -rf ${tmptree}
+        exit 0
+    fi
+
     git archive "$newrev" | tar x -C "$tmptree"
 
     # for a new branch oldrev is 0{40}, set newrev to branch name and oldrev to parent branch
