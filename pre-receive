@@ -46,7 +46,7 @@ while read -r oldrev newrev refname; do
     # workaround: deleting a branch should skip the checks
     if [[ $newrev == "0000000000000000000000000000000000000000" ]]; then
         echo "Skipping file checks this is a branch delete..."
-        rm -rf ${tmptree}
+        rm -rf "$tmptree"
         exit 0
     fi
 
