@@ -44,10 +44,9 @@ esac
 while read -r oldrev newrev refname; do
     git archive "$newrev" | tar x -C "$tmptree"
 
-    # for a new branch oldrev is 0{40}, set newrev to branch name and oldrev to parent branch
+    # for a new branch oldrev is 0{40}, set oldrev to the commit where we branched off the parent
     if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
-      newrev=$(git rev-parse --abbrev-ref HEAD)
-      oldrev=$(git show-branch | grep '\*' | grep -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
+      oldrev=$(git rev-list --boundary $newrev --not --all | sed -n 's/^-//p')
     fi
 
     files_list=''
