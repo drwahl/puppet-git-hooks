@@ -115,14 +115,16 @@ done
 IFS=$SAVEIFS
 
 #rspec test validation
-if hash rspec >/dev/null 2>&1; then
-    ${subhook_root}/rspec_puppet_checks.sh
-    RC=$?
-    if [[ "$RC" -ne 0 ]]; then
-        failures=$((failures + 1))
-    fi
-else
-    echo "rspec not installed. Skipping rspec-puppet tests..."
+if [[ "$CHECK_RSPEC" != "disabled" ]] ; then
+  if hash rspec >/dev/null 2>&1; then
+      ${subhook_root}/rspec_puppet_checks.sh
+      RC=$?
+      if [[ "$RC" -ne 0 ]]; then
+          failures=$((failures + 1))
+      fi
+  else
+      echo "rspec not installed. Skipping rspec-puppet tests..."
+  fi
 fi
 
 #r10k puppetfile syntax check
