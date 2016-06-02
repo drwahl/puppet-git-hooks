@@ -59,7 +59,7 @@ if [[ $RC -ne 0 ]]; then
     $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
     echo -e "$(tput setaf 1)Error: styleguide violation in $manifest_name (see above)$(tput sgr0)"
 elif [[ -s $error_msg ]]; then
-  $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
+  $error_msg_filter -e "s/^/$(tput setaf 3)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
   echo -e "$(tput setaf 1)Warning: styleguide violation in $manifest_name (see above)$(tput sgr0)"
 fi
 rm -f "$error_msg"
