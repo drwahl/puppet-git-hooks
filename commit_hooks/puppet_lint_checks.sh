@@ -24,9 +24,18 @@ fi
 # De-lint puppet manifests
 echo -e "$(tput setaf 6)Checking puppet style guide compliance for ${manifest_name}...$(tput sgr0)"
 
+# Set the puppet lint option to fail on warnings if true.
+if [ "${PUPPET_LINT_FAIL_ON_WARNINGS}" = true ]; then
+  puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
+elif [ "${PUPPET_LINT_FAIL_ON_WARNINGS}" = false ]; then
+  puppet_lint_cmd="puppet-lint --with-filename --relative"
+else
+  echo "Configuration Option PUPPET_LINT_FAIL_ON_WARNINGS not set to a boolean value"
+  exit 1
+fi
+
 # If a file named .puppet-lint.rc exists at the base of the repo then use it to
 # enable or disable checks.
-puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
 puppet_lint_rcfile="${3}.puppet-lint.rc"
 if [[ -f $puppet_lint_rcfile ]]; then
     echo -e "$(tput setaf 6)Applying custom config from ${puppet_lint_rcfile}$(tput sgr0)"
@@ -49,6 +58,9 @@ if [[ $RC -ne 0 ]]; then
   syntax_errors=$(wc -l "$error_msg" | awk '{print $1}')
     $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
     echo -e "$(tput setaf 1)Error: styleguide violation in $manifest_name (see above)$(tput sgr0)"
+elif [[ -s $error_msg ]]; then
+  $error_msg_filter -e "s/^/$(tput setaf 3)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
+  echo -e "$(tput setaf 1)Warning: styleguide violation in $manifest_name (see above)$(tput sgr0)"
 fi
 rm -f "$error_msg"
 
