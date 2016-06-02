@@ -24,9 +24,18 @@ fi
 # De-lint puppet manifests
 echo -e "$(tput setaf 6)Checking puppet style guide compliance for ${manifest_name}...$(tput sgr0)"
 
+# Set the puppet lint option to fail on warnings if true.
+if [ "${PUPPET_LINT_FAIL_ON_WARNINGS}" = true ]; then
+  puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
+elif [ "${PUPPET_LINT_FAIL_ON_WARNINGS}" = false ]; then
+  puppet_lint_cmd="puppet-lint --with-filename --relative"
+else
+  echo "Configuration Option PUPPET_LINT_FAIL_ON_WARNINGS not set to a boolean value"
+  exit 1
+fi
+
 # If a file named .puppet-lint.rc exists at the base of the repo then use it to
 # enable or disable checks.
-puppet_lint_cmd="puppet-lint --fail-on-warnings --with-filename --relative"
 puppet_lint_rcfile="${3}.puppet-lint.rc"
 if [[ -f $puppet_lint_rcfile ]]; then
     echo -e "$(tput setaf 6)Applying custom config from ${puppet_lint_rcfile}$(tput sgr0)"
