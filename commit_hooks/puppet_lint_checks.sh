@@ -11,7 +11,7 @@ module_dir="$3"
 syntax_errors=0
 error_msg="$(mktemp /tmp/error_msg_puppet-lint.XXXXX)"
 
-opts=${PUPPET_LINT_OPTIONS:-"--no-80chars-check"}
+opts=${PUPPET_LINT_OPTIONS:-"--no-140chars-check"}
 
 if [[ $module_dir ]]; then
     manifest_name="${manifest_path##*$module_dir}"
