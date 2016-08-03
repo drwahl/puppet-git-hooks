@@ -28,6 +28,15 @@ Current supported pre-receive (server side) checks
 * Puppet-lint
 * Yaml (hiera data) syntax
 
+Installing dependencies
+=======================
+
+You can install all required dependencies with bundler. List of dependencies you will find in `Gemfile`. By default it installs puppet in version 3.8.6, if you wish, change it to one, which you use. To install run bundler inside your checkout: 
+
+```bash
+bundle install
+```
+
 Usage
 =====
 
