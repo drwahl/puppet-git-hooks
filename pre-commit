@@ -9,6 +9,14 @@ RC=0
 hook_dir="$(dirname "$0")"
 hook_symlink="$(readlink "$0")"
 
+# Manage arguments passed to script
+while getopts ":a" o; do 
+    case "${o}" in
+        a)
+            CHECK_ALL=true
+    esac
+done
+
 # Figure out where commit hooks are
 if [[ ! -z "$hook_symlink" ]] && ! [[ "$hook_symlink" == ../* ]]; then
   #pre-commit is setup as a symlink
@@ -41,7 +49,13 @@ fi
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
-for changedfile in $(git diff --cached --name-only --diff-filter=ACM); do
+if [ $CHECK_ALL ]; then
+        files_to_check=$(find $git_root)
+else
+    files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
+fi
+
+for changedfile in files_to_check; do
     [[ -f "$changedfile" ]] || continue
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
