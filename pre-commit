@@ -55,7 +55,7 @@ else
     files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
 fi
 
-for changedfile in files_to_check; do
+for changedfile in $files_to_check; do
     [[ -f "$changedfile" ]] || continue
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
@@ -156,7 +156,7 @@ fi
 
 #summary
 if [[ "$failures" -ne 0 ]]; then
-    echo -e "$(tput setaf 1)Error: $failures subhooks failed. Aborting commit.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: $failures subhooks failed. Please fix above errors.$(tput sgr0)"
     exit 1
 fi
 
