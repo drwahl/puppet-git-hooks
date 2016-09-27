@@ -20,7 +20,7 @@ fi
 
 # Get list of new/modified manifest and template files to check (in git index)
 # Check puppet manifest syntax
-echo -e "$(tput setaf 6)Checking puppet manifest syntax for $manifest_name...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking puppet manifest syntax for $manifest_name...$(tput sgr0)"
 if [[ $USE_PUPPET_FUTURE_PARSER != "enabled" ]]; then
     puppet parser validate --color=false "$1" > "$error_msg"
 else
@@ -30,12 +30,12 @@ fi
 if [[ $? -ne 0 ]]; then
   syntax_errors=$((syntax_errors + 1))
     $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" < "$error_msg"
-    echo -e "$(tput setaf 1)Error: puppet syntax error in $manifest_name (see above)$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: puppet syntax error in $manifest_name (see above)$(tput sgr0)"
 fi
 rm -f "$error_msg"
 
 if [[ $syntax_errors -ne 0 ]]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in puppet manifests. Commit will be aborted.$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in puppet manifests. Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 

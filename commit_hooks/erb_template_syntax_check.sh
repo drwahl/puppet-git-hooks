@@ -15,17 +15,17 @@ else
 fi
 
 # Check ERB template syntax
-echo -e "$(tput setaf 6)Checking erb template syntax for $module_path...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking erb template syntax for $module_path...$(tput sgr0)"
 erb -P -x -T - "$1" | ruby -c 2> "$error_msg" 1>&2
 if [ $? -ne 0 ]; then
     sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" "$error_msg"
     syntax_errors=$((syntax_errors + 1))
-    echo -e "$(tput setaf 1)Error: erb syntax error in $module_path (see above)$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: erb syntax error in $module_path (see above)$(tput sgr0)"
 fi
 rm -f "$error_msg"
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax errors found in templates. Commit will be aborted.$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax errors found in templates. Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 

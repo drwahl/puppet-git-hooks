@@ -15,7 +15,7 @@ while getopts ":a" o; do
         a)
             CHECK_ALL=true;;
         s)
-            SILENT="1>/dev/null";;
+            ERRORS_ONLY=true;;
     esac
 done
 
@@ -62,13 +62,13 @@ for changedfile in $files_to_check; do
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
         if [[ $(echo "$changedfile" | grep -q '\.*\.epp$'; echo $?) -eq 0 ]]; then
-            ${subhook_root}/puppet_epp_syntax_check.sh "$changedfile" $SILENT
+            . ${subhook_root}/puppet_epp_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
             fi
         elif [[ $(echo "$changedfile" | grep -q '\.*\.pp$'; echo $?) -eq 0 ]]; then
-            ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile" $SILENT
+            . ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
@@ -82,7 +82,7 @@ for changedfile in $files_to_check; do
         #check erb (template file) syntax
         if type erb >/dev/null 2>&1; then
             if [[ $(echo "$changedfile" | grep -q '\.*.erb$'; echo $?) -eq 0 ]]; then
-                ${subhook_root}/erb_template_syntax_check.sh "$changedfile" $SILENT
+                . ${subhook_root}/erb_template_syntax_check.sh "$changedfile"
                 RC=$?
                 if [[ "$RC" -ne 0 ]]; then
                     failures=$((failures + 1))
@@ -94,7 +94,7 @@ for changedfile in $files_to_check; do
 
         #check hiera data (yaml/yml/eyaml/eyml) syntax
         if [[ $(echo "$changedfile" | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]]; then
-            ${subhook_root}/yaml_syntax_check.sh "$changedfile" $SILENT
+            . ${subhook_root}/yaml_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
@@ -103,7 +103,7 @@ for changedfile in $files_to_check; do
 
         #check json (i.e. metadata.json) syntax
         if [[ $(echo "$changedfile" | grep -q '\.*.json$'; echo $?) -eq 0 ]]; then
-            ${subhook_root}/json_syntax_check.sh "$changedfile" $SILENT
+            . ${subhook_root}/json_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
@@ -117,7 +117,7 @@ for changedfile in $files_to_check; do
     if [[ "$CHECK_PUPPET_LINT" != "disabled" ]] ; then
         if type puppet-lint >/dev/null 2>&1; then
             if [[ $(echo "$changedfile" | grep -q '\.*\.pp$' ; echo $?) -eq 0 ]]; then
-                ${subhook_root}/puppet_lint_checks.sh "$CHECK_PUPPET_LINT" "$changedfile" $SILENT
+                . ${subhook_root}/puppet_lint_checks.sh "$CHECK_PUPPET_LINT" "$changedfile"
                 RC=$?
                 if [[ "$RC" -ne 0 ]]; then
                     failures=$((failures + 1))
@@ -133,7 +133,7 @@ IFS=$SAVEIFS
 #rspec test validation
 if [[ "$CHECK_RSPEC" != "disabled" ]] ; then
   if hash rspec >/dev/null 2>&1; then
-      ${subhook_root}/rspec_puppet_checks.sh $SILENT
+      . ${subhook_root}/rspec_puppet_checks.sh
       RC=$?
       if [[ "$RC" -ne 0 ]]; then
           failures=$((failures + 1))
