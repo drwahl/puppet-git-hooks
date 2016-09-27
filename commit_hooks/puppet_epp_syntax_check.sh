@@ -24,12 +24,12 @@ puppet epp validate --color=false $1 > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     syntax_errors=`expr $syntax_errors + 1`
     cat $error_msg | $error_msg_filter -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
-    echo -e "$(tput setaf 1)Error: puppet syntax error in $epp_template_name (see above)$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: puppet syntax error in $epp_template_name (see above)$(tput sgr0)" >&2
 fi
 rm -f $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in puppet epp templates. Commit will be aborted.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in puppet epp templates. Commit will be aborted.$(tput sgr0)" >&2
     exit 1
 fi
 

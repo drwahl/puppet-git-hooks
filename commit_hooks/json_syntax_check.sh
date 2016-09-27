@@ -18,7 +18,7 @@ ruby -e "require 'rubygems'; require 'json'; JSON.parse(File.read('$1'))" 2> $er
 if [ $? -ne 0 ]; then
     cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     syntax_errors=`expr $syntax_errors + 1`
-    echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)" >&2
 fi
 rm -f $error_msg
 
@@ -28,7 +28,7 @@ if which metadata-json-lint > /dev/null 2>&1; then
         if [ $? -ne 0 ]; then 
             cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
             syntax_errors=`expr $syntax_errors + 1`
-            echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)"
+            echo -e "$(tput setaf 1)Error: json syntax error in $module_path (see above)$(tput sgr0)" >&2
         fi            
     fi
 else
@@ -36,7 +36,7 @@ else
 fi
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in json file.  Commit will be aborted.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in json file.  Commit will be aborted.$(tput sgr0)" >&2
     exit 1
 fi
 

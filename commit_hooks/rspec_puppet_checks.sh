@@ -35,7 +35,7 @@ for module_dir in $changedmodules; do
         RC=$?
         if [ $RC -ne 0 ]; then
             cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
-            echo -e "$(tput setaf 1)Error: rspec-puppet test(s) failed for $module_dir (see above)$(tput sgr0)"
+            echo -e "$(tput setaf 1)Error: rspec-puppet test(s) failed for $module_dir (see above)$(tput sgr0)" >&2
             syntax_errors=`expr $syntax_errors + 1`
         fi
     fi
@@ -46,7 +46,7 @@ cd $oldpwd > /dev/null
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: $syntax_errors rspec-puppet test(s) failed. Commit will be aborted.$(tput sgr0)" >&2
     exit 1
 fi
 
