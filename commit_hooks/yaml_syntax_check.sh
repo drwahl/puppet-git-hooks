@@ -13,7 +13,7 @@ else
 fi
 
 # Check YAML file syntax
-echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
 ruby -e "require 'yaml'; YAML.parse(File.open('$1'))" 2> "$error_msg" > /dev/null
 if [ $? -ne 0 ]; then
     sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" "$error_msg"

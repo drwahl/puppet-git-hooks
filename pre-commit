@@ -13,7 +13,9 @@ hook_symlink="$(readlink "$0")"
 while getopts ":a" o; do 
     case "${o}" in
         a)
-            CHECK_ALL=true
+            CHECK_ALL=true;;
+        s)
+            export ERRORS_ONLY=true;;
     esac
 done
 
