@@ -102,3 +102,4 @@ if [ -e ~/.puppet-git-hooks/pre-commit ]; then
 fi
 ```
 
+Additionally you can call pre-commit script with two options `-s` and `-a`. First one silence standard informations, which file is currently being checked. Second one allow you to check whole repo, not only files changed locally.
