@@ -13,17 +13,17 @@ else
 fi
 
 # Check YAML file syntax
-echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
 ruby -e "require 'yaml'; YAML.parse(File.open('$1'))" 2> "$error_msg" > /dev/null
 if [ $? -ne 0 ]; then
     sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" "$error_msg"
     syntax_errors=$((syntax_errors + 1))
-    echo -e "$(tput setaf 1)Error: yaml syntax error in $module_path (see above)$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: yaml syntax error in $module_path (see above)$(tput sgr0)"
 fi
 rm -f "$error_msg"
 
 if [[ $syntax_errors -ne 0 ]]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in hiera yaml. Commit will be aborted.$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax error(s) found in hiera yaml. Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 

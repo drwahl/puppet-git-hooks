@@ -15,17 +15,17 @@ else
 fi
 
 # Check ruby template syntax
-echo -e "$(tput setaf 6)Checking ruby syntax for $module_path...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking ruby syntax for $module_path...$(tput sgr0)"
 cat $1 | ruby -c > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     syntax_errors=`expr $syntax_errors + 1`
-    echo -e "$(tput setaf 1)Error: ruby syntax error in $module_path (see above)$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: ruby syntax error in $module_path (see above)$(tput sgr0)"
 fi
 rm $error_msg
 
 if [ "$syntax_errors" -ne 0 ]; then
-    echo -e "$(tput setaf 1)Error: $syntax_errors syntax errors found in ruby files. Commit will be aborted.$(tput sgr0)" >&2
+    echo -e "$(tput setaf 1)Error: $syntax_errors syntax errors found in ruby files. Commit will be aborted.$(tput sgr0)"
     exit 1
 fi
 
