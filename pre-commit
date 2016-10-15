@@ -62,8 +62,17 @@ else
     files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
 fi
 
+# On cygwin/windows, puppet is a symlink to native puppet install, which needs windows paths.
+if [ "$OSTYPE" == "cygwin" ] && file -L $(which puppet) 2>/dev/null | grep -q 'DOS batch file' && type cygpath >/dev/null 2>&1; then
+    USE_NATIVE="YES"
+fi
 for changedfile in $files_to_check; do
     [[ -f "$changedfile" ]] || continue
+    if [ "$USE_NATIVE" == "YES" ]; then
+        changedfile_native="`cygpath -w "$changedfile"`"
+    else
+        changedfile_native="$changedfile"
+    fi
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
         if [[ $(echo "$changedfile" | grep -q '\.*\.epp$'; echo $?) -eq 0 ]]; then
@@ -73,7 +82,7 @@ for changedfile in $files_to_check; do
                 failures=$((failures + 1))
             fi
         elif [[ $(echo "$changedfile" | grep -q '\.*\.pp$'; echo $?) -eq 0 ]]; then
-            ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile" "" "$USE_PUPPET_FUTURE_PARSER"
+            ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile_native" "" "$USE_PUPPET_FUTURE_PARSER"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
