@@ -57,7 +57,7 @@ SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 if [ $CHECK_ALL ]; then
-        files_to_check=$(find $git_root)
+        files_to_check=$(find $git_root -path $git_root/.git -prune -o -print)
 else
     files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
 fi
