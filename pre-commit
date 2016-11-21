@@ -29,21 +29,21 @@ else
 fi
 
 # If using submodules, we need to read proper subhook root
-if [[ -f "$git_root/.git" ]]; then
+if [[ -f "${git_root}/.git" ]]; then
     IFS=": "
     while read -r name value
     do
-        if [[ $name == "gitdir" ]]; then
-            submodule_hookdir=$value
+        if [[ "$name" == "gitdir" ]]; then
+            submodule_hookdir="$value"
         fi
-    done < "$git_root/.git"
+    done < "${git_root}/.git"
     if [[ ! -z "$submodule_hookdir" ]]; then
-        subhook_root="$git_root/$submodule_hookdir/hooks/commit_hooks"
+        subhook_root="${git_root}/${submodule_hookdir}/hooks/commit_hooks"
     fi
 fi
 
 # Decide if we want puppet-lint
-CHECK_PUPPET_LINT="enabled"
+CHECK_PUPPET_LINT=${CHECK_PUPPET_LINT:-"enabled"}
 if [[ -e ${subhook_root}/config.cfg ]] ; then
     source "${subhook_root}/config.cfg"
 fi
@@ -57,13 +57,13 @@ SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 if [ $CHECK_ALL ]; then
-        files_to_check=$(find $git_root -path $git_root/.git -prune -o -print)
+    files_to_check=$(find "$git_root" -path "${git_root}/.git" -prune -o -print)
 else
     files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
 fi
 
 # On cygwin/windows, puppet is a symlink to native puppet install, which needs windows paths.
-if [ "$OSTYPE" == "cygwin" ] && file -L $(which puppet) 2>/dev/null | grep -q 'DOS batch file' && type cygpath >/dev/null 2>&1; then
+if [[ "$OSTYPE" == "cygwin" ]] && file -L $(which puppet) 2>/dev/null | grep -q 'DOS batch file' && type cygpath >/dev/null 2>&1; then
     USE_NATIVE="YES"
 fi
 for changedfile in $files_to_check; do
@@ -75,13 +75,13 @@ for changedfile in $files_to_check; do
     fi
     #check puppet manifest syntax
     if type puppet >/dev/null 2>&1; then
-        if [[ $(echo "$changedfile" | grep -q '\.*\.epp$'; echo $?) -eq 0 ]]; then
+        if echo "$changedfile" | grep -iq '\.epp$'; then
             ${subhook_root}/puppet_epp_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))
             fi
-        elif [[ $(echo "$changedfile" | grep -q '\.*\.pp$'; echo $?) -eq 0 ]]; then
+        elif echo "$changedfile" | grep -iq '\.pp$'; then
             ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile_native" "" "$USE_PUPPET_FUTURE_PARSER"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
@@ -95,7 +95,7 @@ for changedfile in $files_to_check; do
     if type ruby >/dev/null 2>&1; then
         #check erb (template file) syntax
         if type erb >/dev/null 2>&1; then
-            if [[ $(echo "$changedfile" | grep -q '\.*.erb$'; echo $?) -eq 0 ]]; then
+            if echo "$changedfile" | grep -iq '\.erb$'; then
                 ${subhook_root}/erb_template_syntax_check.sh "$changedfile"
                 RC=$?
                 if [[ "$RC" -ne 0 ]]; then
@@ -107,7 +107,7 @@ for changedfile in $files_to_check; do
         fi
 
         #check hiera data (yaml/yml/eyaml/eyml) syntax
-        if [[ $(echo "$changedfile" | grep -q '\.*.e\?ya\?ml$'; echo $?) -eq 0 ]]; then
+        if echo "$changedfile" | grep -iq '\.e\?ya\?ml$'; then
             ${subhook_root}/yaml_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
@@ -116,7 +116,7 @@ for changedfile in $files_to_check; do
         fi
 
         #check json (i.e. metadata.json) syntax
-        if [[ $(echo "$changedfile" | grep -q '\.*.json$'; echo $?) -eq 0 ]]; then
+        if echo "$changedfile" | grep -iq '\.json$'; then
             ${subhook_root}/json_syntax_check.sh "$changedfile"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
@@ -130,12 +130,16 @@ for changedfile in $files_to_check; do
     #puppet manifest styleguide compliance
     if [[ "$CHECK_PUPPET_LINT" != "disabled" ]] ; then
         if type puppet-lint >/dev/null 2>&1; then
-            if [[ $(echo "$changedfile" | grep -q '\.*\.pp$' ; echo $?) -eq 0 ]]; then
+            if echo "$changedfile" | grep -iq '\.pp$'; then
+              if [[ "$failures" -eq 0 ]]; then
                 ${subhook_root}/puppet_lint_checks.sh "$CHECK_PUPPET_LINT" "$changedfile"
                 RC=$?
                 if [[ "$RC" -ne 0 ]]; then
                     failures=$((failures + 1))
                 fi
+              else
+                echo "Skipping puppet-lint check due to prior errors."
+              fi
             fi
         else
             echo "puppet-lint not installed. Skipping puppet-lint tests..."
@@ -172,7 +176,7 @@ fi
 
 #summary
 if [[ "$failures" -ne 0 ]]; then
-    echo -e "$(tput setaf 1)Error: $failures subhooks failed. Please fix above errors.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: ${failures} subhooks failed. Please fix above errors.$(tput sgr0)"
     exit 1
 fi
 
