@@ -29,16 +29,16 @@ else
 fi
 
 # If using submodules, we need to read proper subhook root
-if [[ -f "$git_root/.git" ]]; then
+if [[ -f "${git_root}/.git" ]]; then
     IFS=": "
     while read -r name value
     do
-        if [[ $name == "gitdir" ]]; then
-            submodule_hookdir=$value
+        if [[ "$name" == "gitdir" ]]; then
+            submodule_hookdir="$value"
         fi
-    done < "$git_root/.git"
+    done < "${git_root}/.git"
     if [[ ! -z "$submodule_hookdir" ]]; then
-        subhook_root="$git_root/$submodule_hookdir/hooks/commit_hooks"
+        subhook_root="${git_root}/${submodule_hookdir}/hooks/commit_hooks"
     fi
 fi
 
@@ -57,7 +57,7 @@ SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")
 
 if [ $CHECK_ALL ]; then
-    files_to_check=$(find "$git_root" -path "$git_root/.git" -prune -o -print)
+    files_to_check=$(find "$git_root" -path "${git_root}/.git" -prune -o -print)
 else
     files_to_check=$(git diff --cached --name-only --diff-filter=ACM)
 fi
@@ -131,7 +131,7 @@ for changedfile in $files_to_check; do
     if [[ "$CHECK_PUPPET_LINT" != "disabled" ]] ; then
         if type puppet-lint >/dev/null 2>&1; then
             if echo "$changedfile" | grep -iq '\.pp$'; then
-              if [[ 0"$failures" -eq 0 ]]; then
+              if [[ "$failures" -eq 0 ]]; then
                 ${subhook_root}/puppet_lint_checks.sh "$CHECK_PUPPET_LINT" "$changedfile"
                 RC=$?
                 if [[ "$RC" -ne 0 ]]; then
@@ -176,7 +176,7 @@ fi
 
 #summary
 if [[ "$failures" -ne 0 ]]; then
-    echo -e "$(tput setaf 1)Error: $failures subhooks failed. Please fix above errors.$(tput sgr0)"
+    echo -e "$(tput setaf 1)Error: ${failures} subhooks failed. Please fix above errors.$(tput sgr0)"
     exit 1
 fi
 
