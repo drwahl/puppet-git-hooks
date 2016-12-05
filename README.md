@@ -103,3 +103,17 @@ fi
 ```
 
 Additionally you can call pre-commit script with two options `-s` and `-a`. First one silence standard informations, which file is currently being checked. Second one allow you to check whole repo, not only files changed locally.
+
+Configuration
+===============
+You can set configuration options in commit_hooks/config.cfg
+This file is sourced by the pre-commit/receive hooks.
+
+Current options:
+* CHECK_PUPPET_LINT
+* USE_PUPPET_FUTURE_PARSER (only used by Puppet < 4)
+* CHECK_INITIAL_COMMIT
+* CHECK_RSPEC
+* PUPPET_LINT_OPTIONS
+* PUPPET_LINT_FAIL_ON_WARNINGS
+* UNSET_RUBY_ENV (for GitLab users)
