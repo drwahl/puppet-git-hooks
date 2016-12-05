@@ -82,7 +82,7 @@ for changedfile in $files_to_check; do
                 failures=$((failures + 1))
             fi
         elif echo "$changedfile" | grep -iq '\.pp$'; then
-            ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile_native" "" "$USE_PUPPET_FUTURE_PARSER"
+            ${subhook_root}/puppet_manifest_syntax_check.sh "$changedfile_native" "$USE_PUPPET_FUTURE_PARSER"
             RC=$?
             if [[ "$RC" -ne 0 ]]; then
                 failures=$((failures + 1))

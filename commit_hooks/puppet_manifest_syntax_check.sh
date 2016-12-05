@@ -4,19 +4,12 @@
 # to a puppet manifest file for which it will run syntax checks against.
 
 manifest_path="$1"
-module_dir="$2"
-USE_PUPPET_FUTURE_PARSER="$3"
+USE_PUPPET_FUTURE_PARSER="$2"
 
 syntax_errors=0
 error_msg=$(mktemp /tmp/error_msg_puppet-syntax.XXXXX)
-
-if [[ $module_dir ]]; then
-    manifest_name="${manifest_path##*$module_dir}"
-    error_msg_filter="sed -e s|$module_dir||"
-else
-    manifest_name="$manifest_path"
-    error_msg_filter="sed"
-fi
+manifest_name="$manifest_path"
+error_msg_filter="sed"
 
 # Get list of new/modified manifest and template files to check (in git index)
 # Check puppet manifest syntax
