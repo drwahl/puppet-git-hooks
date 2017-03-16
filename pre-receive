@@ -3,7 +3,7 @@
 # Puppet attempts to source ~/.puppet and will error if $HOME is not set
 if [[ -z $HOME ]]
 then
-  HOME="$(grep "${USER}:" /etc/passwd | awk -F ':' '{print $6}')"
+  HOME="$(getent passwd "${USER}" | awk -F ':' '{print $6}')"
   export HOME
 fi
 
