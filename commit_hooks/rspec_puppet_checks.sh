@@ -28,7 +28,7 @@ changedmodules=$(echo -e "$tmpchangedmodules" | sort -u)
 for module_dir in $changedmodules; do
     #only run rspec if the "spec" directory exists
     if [ -d "${module_dir}/spec" ]; then
-        echo -e "$(tput setaf 6)Running rspec-puppet tests for module $module_path...$(tput sgr0)"
+        $ERRORS_ONLY || echo -e "$(tput setaf 6)Running rspec-puppet tests for module $module_path...$(tput sgr0)"
         cd $module_dir
         #this will run rspec for every test in the module
         rspec > $error_msg

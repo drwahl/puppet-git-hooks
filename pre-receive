@@ -3,7 +3,7 @@
 # Puppet attempts to source ~/.puppet and will error if $HOME is not set
 if [[ -z $HOME ]]
 then
-  HOME="$(grep "${USER}:" /etc/passwd | awk -F ':' '{print $6}')"
+  HOME="$(getent passwd "${USER}" | awk -F ':' '{print $6}')"
   export HOME
 fi
 
@@ -33,9 +33,17 @@ export TERM
 CHECK_PUPPET_LINT="enabled"
 CHECK_TAG_METADATA="enabled"
 USE_PUPPET_FUTURE_PARSER="enabled"
+CHECK_INITIAL_COMMIT="disabled"
 if [[ -e ${subhook_root}/config.cfg ]] ; then
     source "${subhook_root}/config.cfg"
 fi
+
+# This is required for GitLab
+# See https://github.com/drwahl/puppet-git-hooks/issues/76
+if [[ $UNSET_RUBY_ENV == "enabled" ]] ; then
+    unset BUNDLE_GEMFILE RUBYLIB RUBYOPT GEM_HOME
+fi
+
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
 case $(puppet --version) in
   4*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
@@ -44,10 +52,20 @@ esac
 while read -r oldrev newrev refname; do
     git archive "$newrev" | tar x -C "$tmptree"
 
-    # for a new branch oldrev is 0{40}, set newrev to branch name and oldrev to parent branch
+    # for a new branch oldrev is 0{40}, set oldrev to the commit where we branched off the parent
     if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
-      newrev=$(git rev-parse --abbrev-ref HEAD)
-      oldrev=$(git show-branch | grep '\*' | grep -v "$newrev" | head -n1 | sed 's/.*\[\(.*\)\].*/\1/' | sed 's/[\^~].*//')
+      oldrev=$(git rev-list --boundary $newrev --not --all | sed -n 's/^-//p')
+    fi
+
+    files_list=''
+    if [[ "x$oldrev" == 'x' ]]; then
+      if [[ $CHECK_INITIAL_COMMIT != "disabled" ]] ; then
+        files_list=$(git ls-tree --full-tree -r HEAD --name-only)
+      else
+        echo "Skipping file checks this is the initial commit..."
+      fi
+    else
+      files_list=$(git diff --name-only "$oldrev" "$newrev" --diff-filter=ACM)
     fi
 
     if [[ $CHECK_TAG_METADATA != 'disabled' ]]; then
@@ -64,7 +82,7 @@ while read -r oldrev newrev refname; do
         esac
     fi
 
-    for changedfile in $(git diff --name-only "$oldrev" "$newrev" --diff-filter=ACM); do
+    for changedfile in $files_list; do
         tmpmodule="$tmptree/$changedfile"
         [[ -f "$tmpmodule" ]] || continue
         #check puppet manifest syntax

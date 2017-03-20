@@ -29,6 +29,15 @@ Current supported pre-receive (server side) checks
 * Yaml (hiera data) syntax
 * Check tag against metadata.json
 
+Installing dependencies
+=======================
+
+You can install all required dependencies with bundler. List of dependencies you will find in `Gemfile`. By default it installs puppet in version 3.8.6, if you wish, change it to one, which you use. To install run bundler inside your checkout: 
+
+```bash
+bundle install
+```
+
 Usage
 =====
 
@@ -94,3 +103,18 @@ if [ -e ~/.puppet-git-hooks/pre-commit ]; then
 fi
 ```
 
+Additionally you can call pre-commit script with two options `-s` and `-a`. First one silence standard informations, which file is currently being checked. Second one allow you to check whole repo, not only files changed locally.
+
+Configuration
+===============
+You can set configuration options in commit_hooks/config.cfg
+This file is sourced by the pre-commit/receive hooks.
+
+Current options:
+* CHECK_PUPPET_LINT
+* USE_PUPPET_FUTURE_PARSER (only used by Puppet < 4)
+* CHECK_INITIAL_COMMIT
+* CHECK_RSPEC
+* PUPPET_LINT_OPTIONS
+* PUPPET_LINT_FAIL_ON_WARNINGS
+* UNSET_RUBY_ENV (for GitLab users)

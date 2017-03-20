@@ -11,7 +11,7 @@ usage() {
     -r            deploy only the pre-receive hook
     -u            deploy only the post-update hook
     -g            enable to install in Git Lab repo custom_hooks
-    -l		        enable to install in Gitolite 3.6+ repo-specific hooks
+    -l            enable to install in Gitolite 3.6+ repo-specific hooks
     -b            enable to install in Stash/BitBucket Server [pre/post]-receive.d
 
   returns status code of 0 for success, otherwise, failure
@@ -101,6 +101,9 @@ if [ -f "${GIT_REPO}/.git" ]; then
   GIT_REPO="$(cd "${GIT_REPO}" ; cd "${SUBMODULE_REPO}" ; pwd)"
 elif [ "${BITBUCKET_REPO}" = "1" ]; then
   GIT_REPO="${GIT_REPO}"
+elif [ -f "${GIT_REPO}/hooks" ]; then
+  # This is for bare repos
+  GIT_REPO="${GIT_REPO}"
 else
   GIT_REPO="${GIT_REPO}/.git"
 fi
@@ -164,7 +167,7 @@ else
   fi
 
   if [ "${INST_RECEIVE}" = "1" ]; then
-    if [ "${BITBUCKET_REPO}" = "1" ]; then 
+    if [ "${BITBUCKET_REPO}" = "1" ]; then
       # Use pre-receive.d directory and 'full' name for BitBucket
       ln -sf "${HOOKS_DIR}/pre-receive" "${GIT_REPO}/${REAL_HOOKS_DIR}/pre-receive.d/puppet-git-hooks-pre-receive" \
       && echo "pre-receive hook deployed successfully" \

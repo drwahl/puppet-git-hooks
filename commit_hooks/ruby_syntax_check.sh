@@ -15,7 +15,7 @@ else
 fi
 
 # Check ruby template syntax
-echo -e "$(tput setaf 6)Checking ruby syntax for $module_path...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking ruby syntax for $module_path...$(tput sgr0)"
 cat $1 | ruby -c > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"

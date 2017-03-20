@@ -13,8 +13,8 @@ else
 fi
 
 # Check json file syntax
-echo -e "$(tput setaf 6)Checking json syntax for $module_path...$(tput sgr0)"
-ruby -e "require 'json'; JSON.parse(File.read('$1'))" 2> $error_msg > /dev/null
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking json syntax for $module_path...$(tput sgr0)"
+ruby -e "require 'rubygems'; require 'json'; JSON.parse(File.read('$1'))" 2> $error_msg > /dev/null
 if [ $? -ne 0 ]; then
     cat $error_msg | sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/"
     syntax_errors=`expr $syntax_errors + 1`

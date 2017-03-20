@@ -19,7 +19,7 @@ fi
 
 # Get list of new/modified epp template and template files to check (in git index)
 # Check puppet epp template syntax
-echo -e "$(tput setaf 6)Checking puppet epp template syntax for $epp_template_name...$(tput sgr0)"
+$ERRORS_ONLY || echo -e "$(tput setaf 6)Checking puppet epp template syntax for $epp_template_name...$(tput sgr0)"
 puppet epp validate --color=false $1 > $error_msg 2>&1
 if [ $? -ne 0 ]; then
     syntax_errors=`expr $syntax_errors + 1`
