@@ -1,11 +1,9 @@
-Looking for additional maintners.  I do not use puppet on a daily basis anymore, so I'd appreciate an extra
-help ensuring this project meets the needs of the people using it.  Please contact me through github if you
-are interested in helping maintain this project.  Thank you!
-
 puppet-git-hooks
 ================
 
-Git hooks to assist puppet module development.  Client side hooks allow for various checks before commits are staged.  Server side hooks are provided for infrastructural reinforcement of various standardization compliances.
+Git hooks to assist puppet module development.  Client side hooks allow for
+various checks before commits are staged.  Server side hooks are provided
+for infrastructural reinforcement of various standardization compliances.
 
 Current supported pre-commit (client side) checks
 =================================================
@@ -31,7 +29,10 @@ Current supported pre-receive (server side) checks
 Installing dependencies
 =======================
 
-You can install all required dependencies with bundler. List of dependencies you will find in `Gemfile`. By default it installs puppet in version 3.8.6, if you wish, change it to one, which you use. To install run bundler inside your checkout: 
+You can install all required dependencies with bundler. List of dependencies
+you will find in `Gemfile`. By default it installs puppet in version 3.8.6,
+if you wish, change it to one, which you use. To install run bundler inside
+your checkout: 
 
 ```bash
 bundle install
@@ -40,13 +41,16 @@ bundle install
 Usage
 =====
 
-In your git repository you can symlink the pre-commit file from this repository to the .git/hooks/pre-commit of your repository you want to implement this feature.
+In your git repository you can symlink the pre-commit file from this
+repository to the .git/hooks/pre-commit of your repository you want to
+implement this feature.
 
 ```bash
 $ ln -s /path/to/this/repo/puppet-git-hooks/pre-commit .git/hooks/pre-commit
 ```
 
-If you are using git submodules this can be achieved by getting the gitdir from the .git file in your submodule and symlinking to that gitdir location/
+If you are using git submodules this can be achieved by getting the gitdir
+from the .git file in your submodule and symlinking to that gitdir location/
 
 ```bash
 $ cat .git
@@ -84,12 +88,13 @@ deploy-git-hook
 
 In a wrapper
 ===============
-You can call from your own custom pre-commit. This allows you to combine these with your own checks
+You can call from your own custom pre-commit. This allows you to combine
+these with your own checks.
 
 For example, if you've cloned this repo to ~/.puppet-git-hooks
 
 
-The .git/hooks/pre-commit with your puppet code might look like this
+The .git/hooks/pre-commit with your puppet code might look like this:
 
 ```bash
 #!/bin/bash
@@ -102,7 +107,10 @@ if [ -e ~/.puppet-git-hooks/pre-commit ]; then
 fi
 ```
 
-Additionally you can call pre-commit script with two options `-s` and `-a`. First one silence standard informations, which file is currently being checked. Second one allow you to check whole repo, not only files changed locally.
+Additionally you can call pre-commit script with two options `-s` and `-a`.
+First one silence standard informations, which file is currently being
+checked. Second one allow you to check whole repo, not only files changed
+locally.
 
 Configuration
 ===============
@@ -117,3 +125,14 @@ Current options:
 * PUPPET_LINT_OPTIONS
 * PUPPET_LINT_FAIL_ON_WARNINGS
 * UNSET_RUBY_ENV (for GitLab users)
+
+Maintainers
+===========
+
+  * [David Wahlstrom](https://github.com/drwahl)
+  * [Paweł Szczepaniak](https://github.com/krzyzakp)
+
+We are still looking for additional maintainers. Please contact me via
+[github issue](https://github.com/drwahl/puppet-git-hooks/issues/new)
+if you are interested in helping maintain this project. Thank you!
+
