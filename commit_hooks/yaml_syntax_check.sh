@@ -14,7 +14,13 @@ fi
 
 # Check YAML file syntax
 $ERRORS_ONLY || echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
-yaml-lint $1 > "$error_msg"
+if test -e /usr/bin/yamllint
+then
+  yamllint -c ~/.yamllint -f parsable $1 &> "$error_msg"
+else
+  ruby -e "require 'yaml'; YAML.parse(File.open('$1'))" 2> "$error_msg" > /dev/null
+fi
+# prepare output
 if [ $? -ne 0 ]; then
     sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" "$error_msg"
     syntax_errors=$((syntax_errors + 1))
