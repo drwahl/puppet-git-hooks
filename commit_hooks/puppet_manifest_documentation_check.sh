@@ -23,9 +23,9 @@ fi
 # Check puppet manifest syntax
 $ERRORS_ONLY || echo -e "$(tput setaf 6)Checking puppet documentation for $manifest_name...$(tput sgr0)"
 if [[ $USE_PUPPET_FUTURE_PARSER != "enabled" ]]; then
-    puppet strings --color=false "$1" | grep -Eo -e '^\[warn\]:.*$' > "$error_msg"
+    puppet strings --color=false "$manifest_path" | grep -Eo -e '^\[warn\]:.*$' > "$error_msg"
 else
-    puppet strings --parser future --color=false "$1" | grep -Eo -e '^\[warn\]:.*$' > "$error_msg"
+    puppet strings --parser future --color=false "$manifest_path" | grep -Eo -e '^\[warn\]:.*$' > "$error_msg"
 fi
 
 if [[ $? -ne 1 ]]; then
@@ -37,7 +37,7 @@ rm -f "$error_msg"
 
 if [[ $documentations_errors -ne 0 ]]; then
   if [[ $CHECK_PUPPET_DOCS == "permissive" ]] ; then
-    echo -e "(tput setaf 6)Documentation checks in permissive mode. Commit won't be aborted$(tput sgr0)"
+    echo -e "$(tput setaf 6)Documentation checks in permissive mode. Commit won't be aborted$(tput sgr0)"
   else
     echo -e "$(tput setaf 1)Error: $documentations_errors faulty documentation(s) found in puppet manifests. Commit will be aborted.$(tput sgr0)"
     exit 1
