@@ -151,6 +151,24 @@ for changedfile in $files_to_check; do
             echo "puppet-lint not installed. Skipping puppet-lint tests..."
         fi
     fi
+
+    #puppet manifest documentation checks
+    if [[ "$CHECK_PUPPET_DOCS" != "disabled" ]] ; then
+      if puppet strings >/dev/null 2>&1; then
+        if echo "$changedfile" | grep -iq '\.pp$'; then
+          ${subhook_root}/puppet_manifest_documentation_check.sh "$CHECK_PUPPET_LINT" "$changedfile"
+          RC=$?
+          if [[ "$RC" -ne 0 ]]; then
+            failures=$((failures + 1))
+          fi
+        else
+          echo "Skippping puppet documentation checks due to prior errors."
+        fi
+      fi
+    else
+      echo "puppet strings not installed. Skipping puppet documentation checks..."
+    fi
+
 done
 IFS=$SAVEIFS
 
