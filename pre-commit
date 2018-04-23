@@ -158,11 +158,10 @@ for changedfile in $files_to_check; do
         else
           echo "Skippping puppet documentation checks due to prior errors."
         fi
+      else
+        echo "puppet strings not installed. Skipping puppet documentation checks..."
       fi
-    else
-      echo "puppet strings not installed. Skipping puppet documentation checks..."
     fi
-
 done
 IFS=$SAVEIFS
 
