@@ -9,7 +9,7 @@ module_dir="$3"
 USE_PUPPET_FUTURE_PARSER="$4"
 
 documentations_errors=0
-error_msg=$(mktemp /tmp/error_msg_puppet-syntax.XXXXX)
+error_msg=$(mktemp /tmp/error_msg_puppet-docs.XXXXX)
 
 if [[ $module_dir ]]; then
     manifest_name="${manifest_path##*$module_dir}"
