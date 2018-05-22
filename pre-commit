@@ -155,8 +155,6 @@ for changedfile in $files_to_check; do
           if [[ "$RC" -ne 0 ]]; then
             failures=$((failures + 1))
           fi
-        else
-          echo "Skippping puppet documentation checks due to prior errors."
         fi
       else
         echo "puppet strings not installed. Skipping puppet documentation checks..."
