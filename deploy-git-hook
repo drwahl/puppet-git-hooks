@@ -101,7 +101,7 @@ if [ -f "${GIT_REPO}/.git" ]; then
   GIT_REPO="$(cd "${GIT_REPO}" ; cd "${SUBMODULE_REPO}" ; pwd)"
 elif [ "${BITBUCKET_REPO}" = "1" ]; then
   GIT_REPO="${GIT_REPO}"
-elif [ -f "${GIT_REPO}/hooks" ]; then
+elif [ -e "${GIT_REPO}/hooks" ]; then
   # This is for bare repos
   GIT_REPO="${GIT_REPO}"
 else
