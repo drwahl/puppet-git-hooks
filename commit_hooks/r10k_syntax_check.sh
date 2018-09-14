@@ -5,9 +5,10 @@
 echo "Performing a syntax check on the r10k Puppetfile:"
 pushd "$1" >/dev/null
 r10k puppetfile check
+RC=$?
 popd >/dev/null
 
-if [[ $? -ne 0 ]]
+if [[ $RC -ne 0 ]]
 then
 	exit 1
 fi
