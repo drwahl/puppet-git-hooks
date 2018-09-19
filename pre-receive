@@ -45,7 +45,7 @@ fi
 
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
 case $(puppet --version) in
-  4*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
+  4*|5*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
 esac
 
 while read -r oldrev newrev refname; do
@@ -150,7 +150,7 @@ while read -r oldrev newrev refname; do
         #r10k puppetfile syntax check
         if hash r10k >/dev/null 2>&1; then
           if [ "$changedfile" = "Puppetfile" ]; then
-                ${subhook_root}/r10k_syntax_check.sh $tmptree/$changedfile
+                ${subhook_root}/r10k_syntax_check.sh "${tmptree}/"
                 RC=$?
                 if [ "$RC" -ne 0 ]; then
                        failures=`expr $failures + 1`
