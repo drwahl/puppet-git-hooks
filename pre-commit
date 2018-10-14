@@ -177,16 +177,18 @@ if [[ "$CHECK_RSPEC" != "disabled" ]] ; then
 fi
 
 #r10k puppetfile syntax check
-if hash r10k >/dev/null 2>&1; then
-  if [[ "$changedfile" = "Puppetfile" ]]; then
-        "${subhook_root}/r10k_syntax_check.sh"
-        RC=$?
-        if [[ "$RC" -ne 0 ]]; then
-                failures=$((failures + 1))
-        fi
+if [[ "$CHECK_R10K" != "disabled" ]] ; then
+  if hash r10k >/dev/null 2>&1; then
+    if [[ "$changedfile" = "Puppetfile" ]]; then
+          "${subhook_root}/r10k_syntax_check.sh"
+          RC=$?
+          if [[ "$RC" -ne 0 ]]; then
+                  failures=$((failures + 1))
+          fi
+    fi
+  else
+      echo "r10k not installed. Skipping r10k Puppetfile test..."
   fi
-else
-    echo "r10k not installed. Skipping r10k Puppetfile test..."
 fi
 
 #summary
