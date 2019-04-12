@@ -50,7 +50,9 @@ fi
 
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
 case $(puppet --version) in
-  4*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
+  3.0*|3.1*|3.2.0*|3.9*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
+  3*) ;;
+  *)  USE_PUPPET_FUTURE_PARSER="disabled" ;;
 esac
 
 SAVEIFS=$IFS
@@ -162,16 +164,18 @@ if [[ "$CHECK_RSPEC" != "disabled" ]] ; then
 fi
 
 #r10k puppetfile syntax check
-if hash r10k >/dev/null 2>&1; then
-  if [[ "$changedfile" = "Puppetfile" ]]; then
+if [[ "$changedfile" = "Puppetfile" ]]; then
+    if hash r10k >/dev/null 2>&1; then
         "${subhook_root}/r10k_syntax_check.sh"
-        RC=$?
-        if [[ "$RC" -ne 0 ]]; then
-                failures=$((failures + 1))
-        fi
-  fi
-else
-    echo "r10k not installed. Skipping r10k Puppetfile test..."
+    elif hash g10k >/dev/null 2>&1; then
+        "${subhook_root}/g10k_syntax_check.sh"
+    else
+        echo "r10k and g10k not installed. Skipping Puppetfile test..."
+    fi
+    RC=$?
+    if [[ "$RC" -ne 0 ]]; then
+        failures=$((failures + 1))
+    fi
 fi
 
 #summary
