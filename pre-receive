@@ -116,15 +116,6 @@ while read -r oldrev newrev refname; do
                 echo "erb not installed. Skipping erb template checks..."
             fi
 
-            #check hiera data (yaml/yml) syntax
-            if [[ $(echo "$changedfile" | grep -q '\.*\.yaml$\|\.*\.yml$'; echo $?) -eq 0 ]]; then
-                ${subhook_root}/yaml_syntax_check.sh "$tmpmodule" "${tmptree}/"
-                RC=$?
-                if [[ $RC -ne 0 ]]; then
-                  failures=$((failures + 1))
-                fi
-            fi
-
             #check hiera data (json) syntax
             if [[ $(echo "$changedfile" | grep -q '\.*\.json$'; echo $?) -eq 0 ]]; then
                 ${subhook_root}/json_syntax_check.sh "$tmpmodule" "${tmptree}/"
@@ -134,7 +125,20 @@ while read -r oldrev newrev refname; do
                 fi
             fi
         else
-            echo "ruby not installed. Skipping erb/yaml/ruby checks..."
+            echo "ruby not installed. Skipping ruby/erb/json checks..."
+        fi
+
+        if type yamllint >/dev/null 2>&1 || type ruby >/dev/null 2>&1; then
+            #check hiera data (yaml/yml/eyaml/eyml) syntax
+            if echo "$changedfile" | grep -iq '\.e\?ya\?ml$'; then
+                ${subhook_root}/yaml_syntax_check.sh "$tmpmodule" "${tmptree}/"
+                RC=$?
+                if [[ $RC -ne 0 ]]; then
+                  failures=$((failures + 1))
+                fi
+            fi
+        else
+            echo "yamllint nor ruby not installed. Skipping yaml checks..."
         fi
 
         #puppet manifest styleguide compliance

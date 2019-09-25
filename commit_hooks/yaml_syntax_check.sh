@@ -22,8 +22,7 @@ fi
 
 # Check YAML file syntax
 $ERRORS_ONLY || echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
-if test -e /usr/bin/yamllint
-then
+if type yamllint > /dev/null 2>&1; then
   yamllint $YAMLLINT_CONFIG -f parsable $1 &> "$error_msg"
 else
   ruby -e "require 'yaml'; YAML.parse(File.open('$1'))" 2> "$error_msg" > /dev/null

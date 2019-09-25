@@ -110,15 +110,6 @@ for changedfile in $files_to_check; do
             echo "erb not installed. Skipping erb template checks..."
         fi
 
-        #check hiera data (yaml/yml/eyaml/eyml) syntax
-        if echo "$changedfile" | grep -iq '\.e\?ya\?ml$'; then
-            ${subhook_root}/yaml_syntax_check.sh "$changedfile"
-            RC=$?
-            if [[ "$RC" -ne 0 ]]; then
-                failures=$((failures + 1))
-            fi
-        fi
-
         #check json (i.e. metadata.json) syntax
         if echo "$changedfile" | grep -iq '\.json$'; then
             ${subhook_root}/json_syntax_check.sh "$changedfile"
@@ -128,7 +119,20 @@ for changedfile in $files_to_check; do
             fi
         fi
     else
-        echo "ruby not installed. Skipping erb/yaml/json checks..."
+        echo "ruby not installed. Skipping erb/json checks..."
+    fi
+
+    if type yamllint >/dev/null 2>&1 || type ruby >/dev/null 2>&1; then
+        #check hiera data (yaml/yml/eyaml/eyml) syntax
+        if echo "$changedfile" | grep -iq '\.e\?ya\?ml$'; then
+            ${subhook_root}/yaml_syntax_check.sh "$changedfile"
+            RC=$?
+            if [[ "$RC" -ne 0 ]]; then
+                failures=$((failures + 1))
+            fi
+        fi
+    else
+        echo "yamllint nor ruby not installed. Skipping yaml checks..."
     fi
 
     #puppet manifest styleguide compliance
