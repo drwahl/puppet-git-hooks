@@ -10,7 +10,7 @@ hook_dir="$(dirname "$0")"
 hook_symlink="$(readlink "$0")"
 
 # Manage arguments passed to script
-while getopts ":a" o; do 
+while getopts ":a" o; do
     case "${o}" in
         a)
             CHECK_ALL=true;;
@@ -50,7 +50,7 @@ fi
 
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
 case $(puppet --version) in
-  4*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
+  4*|5*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
 esac
 
 SAVEIFS=$IFS
