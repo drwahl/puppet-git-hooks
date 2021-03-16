@@ -44,9 +44,13 @@ if [[ $UNSET_RUBY_ENV == "enabled" ]] ; then
 fi
 
 # Only puppet 3.2.1 - 3.8 support "--parser future" option.
-case $(puppet --version) in
-  4*) USE_PUPPET_FUTURE_PARSER="disabled" ;;
-esac
+if [[ "$USE_PUPPET_FUTURE_PARSER" == "enabled" ]]; then
+  case $(puppet --version) in
+    3.2.[1-9]) ;;
+    3.[3-8]*)  ;;
+    *) USE_PUPPET_FUTURE_PARSER="disabled" ;;
+  esac
+fi
 
 while read -r oldrev newrev refname; do
     git archive "$newrev" | tar x -C "$tmptree"
@@ -112,15 +116,6 @@ while read -r oldrev newrev refname; do
                 echo "erb not installed. Skipping erb template checks..."
             fi
 
-            #check hiera data (yaml/yml) syntax
-            if [[ $(echo "$changedfile" | grep -q '\.*\.yaml$\|\.*\.yml$'; echo $?) -eq 0 ]]; then
-                ${subhook_root}/yaml_syntax_check.sh "$tmpmodule" "${tmptree}/"
-                RC=$?
-                if [[ $RC -ne 0 ]]; then
-                  failures=$((failures + 1))
-                fi
-            fi
-
             #check hiera data (json) syntax
             if [[ $(echo "$changedfile" | grep -q '\.*\.json$'; echo $?) -eq 0 ]]; then
                 ${subhook_root}/json_syntax_check.sh "$tmpmodule" "${tmptree}/"
@@ -130,7 +125,20 @@ while read -r oldrev newrev refname; do
                 fi
             fi
         else
-            echo "ruby not installed. Skipping erb/yaml/ruby checks..."
+            echo "ruby not installed. Skipping ruby/erb/json checks..."
+        fi
+
+        if type yamllint >/dev/null 2>&1 || type ruby >/dev/null 2>&1; then
+            #check hiera data (yaml/yml/eyaml/eyml) syntax
+            if echo "$changedfile" | grep -iq '\.e\?ya\?ml$'; then
+                ${subhook_root}/yaml_syntax_check.sh "$tmpmodule" "${tmptree}/"
+                RC=$?
+                if [[ $RC -ne 0 ]]; then
+                  failures=$((failures + 1))
+                fi
+            fi
+        else
+            echo "yamllint nor ruby not installed. Skipping yaml checks..."
         fi
 
         #puppet manifest styleguide compliance
@@ -148,16 +156,18 @@ while read -r oldrev newrev refname; do
             fi
         fi
         #r10k puppetfile syntax check
-        if hash r10k >/dev/null 2>&1; then
-          if [ "$changedfile" = "Puppetfile" ]; then
-                ${subhook_root}/r10k_syntax_check.sh $tmptree/$changedfile
-                RC=$?
-                if [ "$RC" -ne 0 ]; then
-                       failures=`expr $failures + 1`
-                fi
+        if [[ "$CHECK_R10K" != "disabled" ]] ; then
+          if hash r10k >/dev/null 2>&1; then
+            if [[ "$changedfile" = "Puppetfile" ]]; then
+                  "${subhook_root}/r10k_syntax_check.sh" "$tmptree/$changedfile"
+                  RC=$?
+                  if [[ "$RC" -ne 0 ]]; then
+                          failures=$((failures + 1))
+                  fi
+            fi
+          else
+              echo "r10k not installed. Skipping r10k Puppetfile test..."
           fi
-        else
-            echo "r10k not installed. Skipping r10k Puppetfile test..."
         fi
     done
 done

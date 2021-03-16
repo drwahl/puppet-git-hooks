@@ -12,9 +12,22 @@ else
     module_path=$1
 fi
 
+if [ -f $PWD/.yamllint ]
+then
+  YAMLLINT_CONFIG="-c $PWD/.yamllint"
+elif [ -f ~/.yamllint ]
+then
+  YAMLLINT_CONFIG="-c $HOME/.yamllint"
+fi
+
 # Check YAML file syntax
 $ERRORS_ONLY || echo -e "$(tput setaf 6)Checking yaml syntax for $module_path...$(tput sgr0)"
-yaml-lint $1 > "$error_msg"
+if type yamllint > /dev/null 2>&1; then
+  yamllint $YAMLLINT_CONFIG -f parsable $1 &> "$error_msg"
+else
+  ruby -e "require 'yaml'; YAML.parse(File.open('$1'))" 2> "$error_msg" > /dev/null
+fi
+# prepare output
 if [ $? -ne 0 ]; then
     sed -e "s/^/$(tput setaf 1)/" -e "s/$/$(tput sgr0)/" "$error_msg"
     syntax_errors=$((syntax_errors + 1))
